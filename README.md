@@ -1,174 +1,181 @@
 # Overlay Chat
 
-MVP de escritorio para Windows 10/11, escrito en C# y WPF. Abre un chat encima de un
-juego en ventana o borderless, escribe tu situación y recibe una respuesta dentro del panel.
+A desktop MVP for Windows 10/11, built with C# and WPF. Open a chat panel over a
+windowed or borderless game, describe your situation, and read the response in the overlay.
 
-Solo se envían las preguntas que escribes y el contexto reciente de la conversación.
-No hay captura de pantalla, OCR, lectura de memoria, detección de unidades, hooks de
-teclado, inyección ni acciones sobre el juego. La hotkey usa `RegisterHotKey` de Windows.
+The API chat sends only the questions you type and recent conversation context.
+There is no screen capture, OCR, memory reading, unit detection, keyboard hooking,
+injection, or interaction with the game. The global hotkey uses Windows `RegisterHotKey`.
 
-## Ejecutar en Windows
+## Run on Windows
 
-Instala el **SDK de .NET 8** y, desde la raíz del proyecto:
+Install the **.NET 8 SDK**, then run this command from the project root:
 
 ```powershell
 dotnet run --project src/GameChatOverlay/GameChatOverlay.csproj -c Release
 ```
 
-También puedes abrir el proyecto en un IDE compatible con .NET 8/WPF.
-La aplicación muestra **Chat API** al iniciar. Puedes abrir **Ajustes** para configurar
-una clave o elegir **ChatGPT web** para usar la página sin clave API.
+You can also open the project in an IDE that supports .NET 8/WPF.
+The application opens on the **Chat API** tab. Open **Settings (`Ajustes`)** to configure
+an API key, or select **ChatGPT web** to use the website without an API key.
+The application UI is currently in Spanish; the instructions below include its button labels.
 
-1. Mantén el endpoint predeterminado de OpenAI o introduce otro endpoint completo compatible con **Responses** o **Chat Completions**.
-2. Introduce un modelo disponible en tu proveedor y la clave API. El modelo inicial es `gpt-5-mini`.
-3. Pulsa **Guardar**, abre tu juego en ventana/borderless y usa **Ctrl+Alt+Espacio**.
-4. Describe manualmente la situación, pulsa **Enter** y lee la respuesta. **Esc** oculta el panel y devuelve el foco a la ventana desde la que lo abriste, cuando Windows lo permite.
+1. Keep the default OpenAI endpoint or enter another full endpoint compatible with **Responses** or **Chat Completions**.
+2. Enter a model available from your provider and your API key. The default model is `gpt-5-mini`.
+3. Click **Save (`Guardar`)**, open your game in windowed or borderless mode, and press **Ctrl+Alt+Space**.
+4. Describe the situation manually, press **Enter**, and read the response. **Esc** hides the panel and returns focus to the window from which you opened it, when Windows allows it.
 
-El juego puede recibir eventos de activación/desactivación y pausar al perder el foco:
-la aplicación es una ventana normal de escritorio. El modo fullscreen exclusivo no
-forma parte del MVP; algunos juegos o sus sistemas anticheat pueden impedir overlays externos.
+The game may receive activation/deactivation events and pause when it loses focus:
+the overlay is a regular desktop window. Exclusive fullscreen is outside the scope
+of this MVP; some games or their anticheat systems may prevent external overlays.
 
 ## ChatGPT web
 
-Selecciona la pestaña **ChatGPT web** para cargar `https://chatgpt.com` en el navegador
-WebView2 integrado. Inicia sesión directamente en la página y escribe allí tus preguntas.
-Esta pestaña no utiliza la clave API ni el historial de Chat API: son dos conversaciones
-independientes. Su funcionamiento depende de la web y de los límites de tu cuenta de ChatGPT.
+Select the **ChatGPT web** tab to load `https://chatgpt.com` in the embedded WebView2
+browser. Sign in directly on the website and type your questions there.
+This tab does not use the API key or the Chat API conversation history: the two
+conversations are independent. Its behavior depends on the website and your ChatGPT account limits.
 
-El navegador se inicializa al abrir la pestaña por primera vez. El panel se amplía hasta
-700 × 760 DIP, limitado por el monitor actual; puedes redimensionarlo después. La pestaña
-incluye **Inicio**, **Recargar**, la dirección actual y **Abrir fuera** para abrir la página
-en tu navegador habitual. El navegador externo tiene su propia sesión; no se transfieren
-cookies entre ellos.
+The browser initializes the first time you open the tab. The panel expands to
+700 × 760 DIP, limited by the current monitor; you can resize it afterward. The tab
+includes **Home (`Inicio`)**, **Reload (`Recargar`)**, the current address, and
+**Open externally (`Abrir fuera`)** to open the page in your usual browser.
+The external browser has its own session; cookies are not transferred between them.
 
-Necesitas **Microsoft Edge WebView2 Evergreen Runtime**, además del ejecutable. Si falta,
-el overlay muestra un enlace a la descarga oficial y Chat API sigue funcionando. Instala
-el runtime y pulsa **Recargar**; no se instala software automáticamente.
-[Descarga oficial](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
+The web tab requires **Microsoft Edge WebView2 Evergreen Runtime** in addition to
+the executable. If it is missing, the overlay displays a link to the official download,
+and Chat API remains available. Install the runtime and click **Reload (`Recargar`)**;
+the application does not install software automatically.
+[Official download](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
 
-Las cookies y el perfil se guardan en
-`%LOCALAPPDATA%\GameChatOverlay\BrowserProfile`, separados del perfil de Edge o Chrome.
-La sesión puede sobrevivir a un reinicio de la aplicación, salvo que el sitio la caduque.
-Para cerrar sesión usa el menú de cuenta de la página; para borrar todo el perfil, cierra
-el overlay y elimina esa carpeta. Las conversaciones de ChatGPT web se gestionan en tu
-cuenta y **no se borran** al pulsar Nueva conversación en Chat API ni al salir del overlay.
+Cookies and browser profile data are stored in
+`%LOCALAPPDATA%\GameChatOverlay\BrowserProfile`, separate from your Edge or Chrome profile.
+The session can survive an application restart unless the website expires it.
+To sign out, use the website's account menu. To delete the entire profile, close the
+overlay and delete that folder. ChatGPT web conversations are managed in your account
+and **are not deleted** when you start a new conversation in Chat API or exit the overlay.
 
-Las ventanas secundarias de login se abren dentro de la aplicación y comparten el perfil.
-`Esc` y la hotkey ocultan el overlay y sus ventanas secundarias, incluso con el foco dentro
-de una página. El overlay no extrae contenido de la página, no inyecta scripts ni automatiza
-el login. La compatibilidad del login real de ChatGPT/Google/Microsoft y los controles de
-acceso del sitio debe comprobarse en Windows: incrustar WebView2 no garantiza que esos
-servicios acepten un navegador integrado.
+Login popups open inside the application and share the browser profile.
+`Esc` and the global hotkey hide the overlay and its popups, including when a webpage
+has focus. The overlay does not extract page content, inject scripts, or automate login.
+Actual ChatGPT/Google/Microsoft login compatibility and website access checks must be
+tested on Windows: embedding WebView2 does not guarantee that those services will
+accept an embedded browser.
 
-## Controles
+## Controls
 
-| Acción | Control |
+| Action | Control |
 | --- | --- |
-| Mostrar / ocultar | Ctrl+Alt+Espacio, también con el juego enfocado |
-| Volver al juego | Esc o botón `—` |
-| Enviar | Enter o Enviar |
-| Nueva línea | Shift+Enter |
-| Cancelar petición | Cancelar |
-| Mover / redimensionar | Arrastrar el título / los bordes |
-| Borrar contexto | Nueva conversación |
-| Recuperar panel | Doble clic en el icono de la bandeja o su menú |
-| Cerrar la aplicación | Bandeja → Salir, o Ajustes → Salir de la aplicación |
+| Show / hide | Ctrl+Alt+Space, including while the game has focus |
+| Return to the game | Esc or the `—` button |
+| Send | Enter or `Enviar` |
+| New line | Shift+Enter |
+| Cancel a request | `Cancelar` |
+| Move / resize | Drag the title / window edges |
+| Clear conversation context | `Nueva conversación` |
+| Recover the panel | Double-click the system tray icon or use its menu |
+| Exit the application | Tray → `Salir`, or `Ajustes` → `Salir de la aplicación` |
 
-Ocultar y Alt+F4 mantienen la aplicación en la bandeja. Ocultar no cancela una petición:
-puedes seguir jugando mientras llega la respuesta. Si otra aplicación ocupa la hotkey,
-el panel lo indica y sigue accesible desde la bandeja. Solo se permite una instancia por
-sesión de Windows. La hotkey es fija en este MVP.
+Hiding the window or pressing Alt+F4 keeps the application in the system tray.
+Hiding does not cancel a request: you can keep playing while waiting for a response.
+If another application has registered the hotkey, the panel reports it and remains
+accessible from the tray. Only one instance is allowed per Windows session.
+The hotkey is fixed in this MVP.
 
-## Proveedor y datos
+## Provider and data
 
-El endpoint debe incluir la ruta completa. Una ruta terminada en `/responses` usa Responses
-con `store: false`; las demás usan Chat Completions. Por ejemplo:
+The endpoint must include the full path. A path ending in `/responses` uses Responses
+with `store: false`; other paths use Chat Completions. Examples:
 
-- OpenAI (predeterminado): `https://api.openai.com/v1/responses`.
-- OpenAI u otro proveedor compatible con Chat Completions: `https://api.openai.com/v1/chat/completions`.
-- Servidor local compatible: `http://127.0.0.1:1234/v1/chat/completions`, con el modelo cargado en ese servidor.
+- OpenAI (default): `https://api.openai.com/v1/responses`.
+- OpenAI or another Chat Completions-compatible provider: `https://api.openai.com/v1/chat/completions`.
+- A compatible local server: `http://127.0.0.1:1234/v1/chat/completions`, using a model loaded on that server.
 
-Se permite HTTPS y HTTP solo en loopback. Se rechazan redirecciones HTTP para evitar
-enviar la clave a un destino distinto. Las respuestas se muestran como texto plano
-seleccionable, sin streaming. Hay cancelación, límites de espera y errores recuperables;
-las preguntas fallidas permanecen en el compositor para reintentar.
+HTTPS is allowed; HTTP is restricted to loopback addresses. HTTP redirects are rejected
+to avoid forwarding the API key to a different destination. Responses appear as
+selectable plain text, without streaming. Requests support cancellation, timeouts,
+and recoverable errors; failed questions remain in the input box so you can retry.
 
-La clave se guarda cifrada con **Windows DPAPI, CurrentUser**, en
-`%LOCALAPPDATA%\GameChatOverlay\settings.json`. Ese archivo también contiene endpoint y
-modelo, sin cifrar. No subas claves al repositorio. DPAPI protege la clave en disco;
-procesos con acceso a tu misma cuenta pueden descifrarla.
+The API key is encrypted with **Windows DPAPI, CurrentUser** and stored in
+`%LOCALAPPDATA%\GameChatOverlay\settings.json`. That file also contains the endpoint
+and model in plain text. Do not commit API keys to the repository. DPAPI protects the
+key on disk; processes running under the same Windows account can decrypt it.
 
-Si el campo de clave está vacío, se usa `OVERLAY_API_KEY`, o en su ausencia
-`OPENAI_API_KEY`, heredada del entorno al iniciar. Un proveedor local puede funcionar sin
-clave. La API de OpenAI requiere una clave y saldo/permisos propios; no usa la sesión
-ni la suscripción de ChatGPT.
+If the API key field is empty, the application uses `OVERLAY_API_KEY`, or
+`OPENAI_API_KEY` if the former is absent, inherited from the environment at startup.
+A local provider may work without a key. The OpenAI API requires its own key,
+account balance, and permissions; it does not use your ChatGPT session or subscription.
 
-El historial permanece en memoria, con los últimos **12 intercambios completos** enviados
-como contexto. La vista conserva hasta 24 intercambios. Cada pregunta admite 8000 caracteres.
-Chat API no guarda archivos de conversación ni añade telemetría de la aplicación. Cambiar endpoint, modelo o
-clave borra la conversación API; salir también la borra. La pestaña web conserva su propio perfil. Los datos enviados quedan sujetos al
-tratamiento del proveedor que configures. El asistente no conoce las reglas ni el mapa salvo
-lo que le describas: el prompt le pide explicar supuestos y no inventar mecánicas.
+Chat API history stays in memory, with the last **12 complete exchanges** sent as context.
+The view retains up to 24 exchanges. Each question supports up to 8,000 characters.
+Chat API does not save conversation files or add application telemetry. Changing the
+endpoint, model, or API key clears the API conversation; exiting clears it as well.
+The web tab retains its own browser profile. Submitted data is subject to the policies
+of your configured provider. The assistant knows only the rules and map details you
+describe: its prompt asks it to state assumptions and avoid inventing game mechanics.
 
-## Publicar un ejecutable portable
+## Publish a portable executable
 
-En Windows, o para compilar desde otro sistema con el SDK de .NET 8:
+On Windows, or when cross-compiling from another system with the .NET 8 SDK:
 
 ```powershell
 dotnet publish src/GameChatOverlay/GameChatOverlay.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/win-x64
 ```
 
-Ejecuta `artifacts\win-x64\GameChatOverlay.exe` en Windows x64, sin instalar .NET. La pestaña web requiere WebView2 Runtime por separado.
-Para Windows ARM64, sustituye `win-x64` por `win-arm64`. El ejecutable no está firmado.
-Las librerías nativas incluidas se extraen al directorio temporal de .NET al arrancar.
-El workflow de GitHub Actions compila y produce el artefacto x64; no despliega ni publica releases.
+Run `artifacts\win-x64\GameChatOverlay.exe` on Windows x64 without installing .NET.
+The web tab requires WebView2 Runtime separately. For Windows ARM64, replace `win-x64`
+with `win-arm64`. The executable is unsigned. Bundled native libraries are extracted
+to the .NET temporary directory at startup. The GitHub Actions workflow builds the
+x64 artifact; it does not deploy the application or publish releases.
 
-## Validación E2E
+## E2E validation
 
-No se incluyen tests unitarios. En un **escritorio Windows desbloqueado e interactivo**,
-cierra cualquier instancia del overlay, compila Release y ejecuta:
+No unit tests are included. On an **unlocked, interactive Windows desktop**, close
+any running overlay instance, build Release, and run:
 
 ```powershell
 powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File tests/Overlay.E2E.ps1
 ```
 
-La prueba requiere WebView2 Runtime y usa UI Automation sobre la aplicación real, un servidor HTTP local simulado y
-una ventana que representa el juego. Comprueba ajustes, cifrado de clave, pregunta/respuesta,
-contexto en Chat Completions y Responses, errores HTTP/respuestas vacías, cancelación, nueva conversación, topmost, hotkey,
-foco, ocultar durante una petición, salida y reinicio. También valida carga diferida del navegador,
-una página web local, popups con el mismo perfil, recarga, Esc dentro de un campo web y
-persistencia de cookies tras reiniciar. Con `-SkipBrowser` puedes validar solo Chat API. No usa una clave real ni hace llamadas
-externas. No interactúes con el teclado durante la prueba. Usa un puerto dinámico y una carpeta
-temporal de ajustes y perfil del navegador aislada; al terminar restaura el entorno y elimina sus archivos.
+The test requires WebView2 Runtime and uses UI Automation against the real application,
+a mock local HTTP server, and a window that stands in for the game. It checks settings,
+API key encryption, questions and responses, context in Chat Completions and Responses,
+HTTP errors and empty responses, cancellation, new conversations, topmost behavior,
+the hotkey, focus, hiding during a request, exit, and restart. It also checks lazy browser
+initialization, a local webpage, popups sharing the same profile, reload, Esc inside a web
+input, and cookie persistence across restarts. Use `-SkipBrowser` to validate only Chat API.
+It does not use a real API key or call external providers. Do not interact with the keyboard
+during the test. It uses a dynamic port and an isolated temporary settings and browser profile
+directory, then restores the environment and removes its files.
 
-El servidor local sustituye también la página web mediante `OVERLAY_BROWSER_TEST_URL`,
-una opción de prueba que solo admite HTTP en loopback. No comprueba el login real de ChatGPT.
-La prueba automatizada no demuestra compatibilidad con un juego concreto. Comprobación manual
-con Hex of Steel u otro juego:
+The local server also replaces the browser home page through `OVERLAY_BROWSER_TEST_URL`,
+a test option that only accepts HTTP loopback URLs. It does not test actual ChatGPT login.
+The automated test does not establish compatibility with a specific game. To check manually
+with Hex of Steel or another game:
 
-1. Inícialo en ventana o borderless y abre el overlay con la hotkey mientras el juego tiene foco.
-2. Escribe la situación, envía y comprueba que puedes seleccionar/copiar la respuesta.
-3. Pulsa Esc y comprueba que vuelven al juego el teclado y el ratón.
-4. Repite mostrando/ocultando durante una petición, moviendo el panel a un segundo monitor y cambiando DPI.
-5. Abre ChatGPT web, inicia sesión, escribe una pregunta, pulsa Esc y prueba la hotkey con el foco en la página. Reinicia y comprueba la sesión.
-6. Sal desde la bandeja y confirma que desaparecen el proceso y el icono.
+1. Start the game in windowed or borderless mode, then open the overlay with the hotkey while the game has focus.
+2. Describe the situation, send the question, and verify that you can select and copy the response.
+3. Press Esc and verify that keyboard and mouse input return to the game.
+4. Repeat while a request is pending, move the panel to a second monitor, and test different DPI settings.
+5. Open ChatGPT web, sign in, type a question, press Esc, and test the hotkey while the webpage has focus. Restart and check the session.
+6. Exit through the tray menu and verify that both the process and tray icon disappear.
 
-WPF solo se ejecuta en Windows. Una compilación cruzada en Linux valida C#/XAML y genera
-el ejecutable, pero no valida visualmente la interfaz ni la interacción con un juego.
+WPF runs only on Windows. Cross-compiling on Linux validates C#/XAML and produces the
+executable, but does not visually validate the interface or its interaction with a game.
 
-## Estructura
+## Project structure
 
-- `MainWindow.xaml` / `.cs`: interfaz, conversación, foco y bandeja; code-behind intencional para el MVP.
-- `MainWindow.Browser.cs`: navegador WebView2, perfil persistente, navegación y ventanas secundarias.
-- `ChatClient.cs`: petición HTTP asíncrona compatible con Responses y Chat Completions.
-- `SettingsStore.cs`: configuración JSON y clave con DPAPI.
-- `NativeMethods.cs`: hotkey global y cambio de foco mediante Win32.
-- `App.xaml` / `.cs`: recursos compartidos, arranque y control de instancia única.
+- `MainWindow.xaml` / `.cs`: UI, conversation, focus, and tray; code-behind is intentional for this MVP.
+- `MainWindow.Browser.cs`: WebView2 browser, persistent profile, navigation, and popups.
+- `ChatClient.cs`: asynchronous HTTP requests compatible with Responses and Chat Completions.
+- `SettingsStore.cs`: JSON configuration and DPAPI-protected API key storage.
+- `NativeMethods.cs`: global hotkey and focus changes through Win32.
+- `App.xaml` / `.cs`: shared resources, startup, and single-instance handling.
 
-Sin backend, base de datos, contenedor de dependencias ni framework MVVM.
+No backend, database, dependency injection container, or MVVM framework.
 
-Referencias de implementación: [Responses](https://developers.openai.com/api/reference/resources/responses/methods/create),
+Implementation references: [Responses](https://developers.openai.com/api/reference/resources/responses/methods/create),
 [Chat Completions](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create),
-[modelo inicial](https://developers.openai.com/api/docs/models/gpt-5-mini),
-[RegisterHotKey](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey) y
+[default model](https://developers.openai.com/api/docs/models/gpt-5-mini),
+[RegisterHotKey](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-registerhotkey), and
 [SetForegroundWindow](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setforegroundwindow).
