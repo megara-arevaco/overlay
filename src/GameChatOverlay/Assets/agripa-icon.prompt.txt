@@ -1,0 +1,3 @@
+Generated with the built-in image_gen tool.
+
+Use case: logo-brand. Asset type: Windows desktop application icon for Agripa, a game strategy adviser named after Marcus Vipsanius Agrippa. Create one polished square icon: bold simplified Roman helmet in profile facing right, with two restrained laurel branches framing its base. Warm bronze/gold helmet, mint green laurel matching a dark forest green interface. Flat graphic silhouette, crisp thick shapes, strong negative space, memorable and readable at 16 and 32 pixels. Centered symbol occupies 80 percent of canvas, generous transparent margin. Genuine transparent background. No text, no letters, no watermark, no mockup, no gradients, no tiny ornament, no photorealism. Single finished app icon only.

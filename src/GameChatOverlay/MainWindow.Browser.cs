@@ -7,24 +7,20 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
-using System.Windows.Media;
+using System.Windows.Input;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
-using Forms = System.Windows.Forms;
 
 namespace GameChatOverlay;
 
 public partial class MainWindow
 {
     private const string ChatGptUrl = "https://chatgpt.com/";
-    private WebView2? _browser;
+    private WebView2CompositionControl? _browser;
     private CoreWebView2Environment? _browserEnvironment;
     private readonly List<Window> _browserPopups = new();
     private bool _browserInitializing;
     private bool _browserFailed;
-    private bool _browserEnlarged;
-    private bool IsBrowserSelected => ChatTabs.SelectedItem == BrowserTab;
-
     // Only the E2E fixture may replace the home page, and only with a loopback URL.
     private static string BrowserHomeUrl
     {
@@ -34,38 +30,6 @@ public partial class MainWindow
             return Uri.TryCreate(testUrl, UriKind.Absolute, out Uri? uri) &&
                 uri.Scheme == "http" && uri.IsLoopback ? uri.AbsoluteUri : ChatGptUrl;
         }
-    }
-
-    private async void Tabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (e.Source != ChatTabs) return;
-        UpdateTabStatus();
-        if (!IsBrowserSelected) HideBrowserPopups();
-        else RestoreBrowserPopups();
-        if (IsBrowserSelected)
-        {
-            if (!_browserEnlarged)
-            {
-                _browserEnlarged = true;
-                // Current monitor bounds, converted from physical pixels to WPF DIP.
-                var area = Forms.Screen.FromHandle(_handle).WorkingArea;
-                var scale = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
-                Rect bounds = new MatrixTransform(scale).TransformBounds(new Rect(area.X, area.Y, area.Width, area.Height));
-                Width = Math.Min(Math.Max(Width, 700), Math.Max(MinWidth, bounds.Width - 32));
-                Height = Math.Min(Math.Max(Height, 760), Math.Max(MinHeight, bounds.Height - 32));
-                Left = Math.Max(bounds.Left, Math.Min(Left, bounds.Right - Width));
-                Top = Math.Max(bounds.Top, Math.Min(Top, bounds.Bottom - Height));
-            }
-            await EnsureBrowserAsync();
-        }
-        if (!_exiting && IsVisible && IsActive) FocusInput();
-    }
-
-    private void UpdateTabStatus()
-    {
-        bool showBrowser = IsBrowserSelected && SettingsPanel.Visibility != Visibility.Visible;
-        StatusText.Visibility = showBrowser ? Visibility.Collapsed : Visibility.Visible;
-        BrowserStatusText.Visibility = showBrowser ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private async Task EnsureBrowserAsync()
@@ -86,7 +50,7 @@ public partial class MainWindow
             Directory.CreateDirectory(profilePath);
             _browserEnvironment = await CoreWebView2Environment.CreateAsync(userDataFolder: profilePath);
             if (_exiting) return;
-            var view = new WebView2 { DefaultBackgroundColor = System.Drawing.Color.FromArgb(25, 29, 28) };
+            var view = new WebView2CompositionControl { DefaultBackgroundColor = System.Drawing.Color.FromArgb(25, 29, 28) };
             _browser = view;
             BrowserHost.Children.Add(view);
             await view.EnsureCoreWebView2Async(_browserEnvironment);
@@ -122,7 +86,7 @@ public partial class MainWindow
         catch (WebView2RuntimeNotFoundException)
         {
             DisposeBrowser();
-            BrowserNoticeText.Text = "Para abrir ChatGPT web necesitas Microsoft Edge WebView2 Runtime. Instálalo y pulsa Recargar. El chat API sigue disponible.";
+            BrowserNoticeText.Text = "Para abrir ChatGPT web necesitas Microsoft Edge WebView2 Runtime. Instálalo y pulsa Recargar.";
             InstallBrowserButton.Visibility = Visibility.Visible;
             BrowserStatusText.Text = "WebView2 Runtime no está instalado.";
         }
@@ -132,7 +96,7 @@ public partial class MainWindow
             {
                 DisposeBrowser();
                 BrowserNoticeText.Text = "No se pudo iniciar el navegador. Revisa los permisos del perfil y la instalación de WebView2, y pulsa Recargar.";
-                BrowserStatusText.Text = "ChatGPT web no está disponible. Puedes usar Chat API.";
+                BrowserStatusText.Text = "ChatGPT web no está disponible. Pulsa Recargar o Abrir fuera.";
             }
         }
         finally
@@ -142,8 +106,9 @@ public partial class MainWindow
         }
     }
 
-    private void ConfigureBrowser(WebView2 view)
+    private void ConfigureBrowser(WebView2CompositionControl view)
     {
+        view.AddHandler(Keyboard.PreviewKeyDownEvent, new KeyEventHandler(Window_PreviewKeyDown), handledEventsToo: true);
         // Ordinary browsing only: no DOM extraction, scripts injected by the host, or host objects.
         view.CoreWebView2.Settings.AreHostObjectsAllowed = false;
         view.CoreWebView2.Settings.IsWebMessageEnabled = false;
@@ -168,7 +133,7 @@ public partial class MainWindow
         args.Handled = true;
         if (_exiting || _browserEnvironment is null || !IsBrowserUrl(args.Uri)) return;
         var deferral = args.GetDeferral();
-        var view = new WebView2();
+        var view = new WebView2CompositionControl();
         var address = new TextBox { IsReadOnly = true, Text = args.Uri, FontSize = 12 };
         var content = new DockPanel();
         DockPanel.SetDock(address, Dock.Top);
@@ -178,6 +143,7 @@ public partial class MainWindow
         {
             Title = "ChatGPT web · Ventana de navegación", Width = 600, Height = 700,
             Owner = this, Topmost = true, ShowInTaskbar = false,
+            Opacity = Opacity,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Content = content, Tag = view, Background = Background
         };
@@ -192,7 +158,7 @@ public partial class MainWindow
             ConfigureBrowser(view);
             view.CoreWebView2.SourceChanged += (_, _) => address.Text = view.CoreWebView2.Source;
             args.NewWindow = view.CoreWebView2; // Same environment/profile preserves opener and login state.
-            if (!IsVisible) popup.Hide();
+            if (!IsVisible || SettingsPanel.Visibility == Visibility.Visible) popup.Hide();
         }
         catch (Exception ex) when (ex is COMException or InvalidOperationException or ArgumentException)
         {
@@ -216,7 +182,7 @@ public partial class MainWindow
         {
             Window popup = _browserPopups[^1];
             popup.Activate();
-            ((WebView2)popup.Tag).Focus();
+            ((WebView2CompositionControl)popup.Tag).Focus();
         }
         else if (_browser is not null && !_browserFailed) _browser.Focus();
         else BrowserReloadButton.Focus();
@@ -227,7 +193,7 @@ public partial class MainWindow
     private void HideBrowserPopups() { foreach (Window popup in _browserPopups) popup.Hide(); }
     private void RestoreBrowserPopups()
     {
-        if (IsBrowserSelected && IsVisible && SettingsPanel.Visibility != Visibility.Visible)
+        if (IsVisible && SettingsPanel.Visibility != Visibility.Visible)
             foreach (Window popup in _browserPopups) popup.Show();
     }
 

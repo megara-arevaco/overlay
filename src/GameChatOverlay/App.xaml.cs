@@ -14,7 +14,7 @@ public partial class App : Application
         _instance = new Mutex(true, @"Local\GameChatOverlay.Mvp", out bool created);
         if (!created)
         {
-            MessageBox.Show("Overlay Chat ya está abierto. Pulsa Ctrl+Alt+Espacio o usa el icono de la bandeja.", "Overlay Chat");
+            MessageBox.Show("Agripa ya está abierto. Pulsa Ctrl+Alt+Espacio o usa el icono de la bandeja.", "Agripa");
             _instance.Dispose();
             _instance = null;
             Shutdown();

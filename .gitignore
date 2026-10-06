@@ -5,3 +5,4 @@ artifacts/
 *.user
 *.suo
 .codex/
+.tools/

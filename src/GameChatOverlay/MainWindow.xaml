@@ -2,8 +2,8 @@
  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
- Title="Overlay Chat" Width="440" Height="620" MinWidth="400" MinHeight="520"
- WindowStyle="None" ResizeMode="CanResize" Topmost="True" ShowInTaskbar="False"
+ Title="Agripa" Icon="Assets/agripa.ico" Width="700" Height="760" MinWidth="400" MinHeight="520"
+ AllowsTransparency="True" WindowStyle="None" ResizeMode="CanResize" Topmost="True" ShowInTaskbar="False"
  Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource InkBrush}"
  FontFamily="Segoe UI" FontSize="14" UseLayoutRounding="True" PreviewKeyDown="Window_PreviewKeyDown">
  <shell:WindowChrome.WindowChrome>
@@ -18,69 +18,24 @@
    <Grid>
     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
     <StackPanel MouseLeftButtonDown="Title_MouseLeftButtonDown" Background="Transparent" Margin="0,0,8,0">
-     <TextBlock Text="Overlay Chat" FontSize="18" FontWeight="SemiBold"/>
+     <StackPanel Orientation="Horizontal">
+      <Image Source="Assets/agripa.ico" Width="24" Height="24" Margin="0,0,8,0"/>
+      <TextBlock Text="Agripa" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+     </StackPanel>
      <TextBlock x:Name="HotkeyHint" Text="Ctrl+Alt+Espacio · mostrar / ocultar" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,4,0,0"/>
     </StackPanel>
-    <Button Grid.Column="1" x:Name="SettingsButton" Content="Ajustes" Click="Settings_Click" Margin="0,0,6,0" VerticalAlignment="Top" AutomationProperties.AutomationId="SettingsButton"/>
+    <Button Grid.Column="1" x:Name="SettingsButton" ToolTip="Ajustes" AutomationProperties.Name="Ajustes" Click="Settings_Click" Margin="0,0,6,0" VerticalAlignment="Top" AutomationProperties.AutomationId="SettingsButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16"/></Button>
     <Button Grid.Column="2" Content="—" Click="Hide_Click" VerticalAlignment="Top" Padding="10,8" ToolTip="Ocultar (Esc)" AutomationProperties.Name="Ocultar overlay" AutomationProperties.AutomationId="HideButton"/>
    </Grid>
    <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}" Margin="0,14,0,12"/>
-   <TabControl Grid.Row="2" x:Name="ChatTabs" AutomationProperties.AutomationId="ChatTabs">
-    <TabItem x:Name="ApiTab" Header="Chat API" AutomationProperties.AutomationId="ApiTab">
-   <Grid x:Name="ChatPanel">
-    <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-    <Grid>
-     <ScrollViewer x:Name="MessagesScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-      <ItemsControl x:Name="MessagesList" ItemsSource="{Binding Messages}">
-       <ItemsControl.ItemTemplate>
-        <DataTemplate>
-         <StackPanel Margin="0,4,0,18">
-          <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource AccentBrush}" Margin="0,0,0,5"/>
-          <TextBox Text="{Binding Body, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
-           Background="Transparent" BorderThickness="0" Padding="0" IsReadOnlyCaretVisible="False"
-           HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
-           AutomationProperties.AutomationId="MessageBody">
-           <TextBox.Style><Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-            <Style.Triggers><DataTrigger Binding="{Binding IsUser}" Value="True"><Setter Property="Foreground" Value="{StaticResource MutedBrush}"/></DataTrigger></Style.Triggers>
-           </Style></TextBox.Style>
-          </TextBox>
-         </StackPanel>
-        </DataTemplate>
-       </ItemsControl.ItemTemplate>
-      </ItemsControl>
-     </ScrollViewer>
-     <ScrollViewer x:Name="EmptyState" VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Center">
-     <StackPanel VerticalAlignment="Center" Margin="6,0,6,24">
-      <TextBlock Text="Tu siguiente movimiento." FontSize="23" FontWeight="SemiBold" Margin="0,0,0,12"/>
-      <TextBlock Text="Describe la situación y pregunta. El asistente solo conoce lo que escribes." Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
-      <Button x:Name="ExampleButton" Click="Example_Click" HorizontalContentAlignment="Left" Padding="12" AutomationProperties.AutomationId="ExampleButton">
-       <TextBlock Text="«Turno 12: tengo 3 tanques y 5 unidades de infantería cerca de Varsovia. ¿Qué harías?»" Foreground="{StaticResource MutedBrush}"/>
-      </Button>
-      <TextBlock Text="Pulsa el ejemplo para editarlo." FontSize="12" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
-     </StackPanel>
-     </ScrollViewer>
-    </Grid>
-    <TextBox Grid.Row="1" x:Name="PromptBox" MinHeight="78" MaxHeight="140" Margin="0,8,0,10" AcceptsReturn="True" TextWrapping="Wrap"
-     MaxLength="8000" VerticalScrollBarVisibility="Auto" PreviewKeyDown="Prompt_PreviewKeyDown"
-     AutomationProperties.Name="Tu pregunta" AutomationProperties.AutomationId="PromptBox"/>
-    <Grid Grid.Row="2">
-     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-     <StackPanel VerticalAlignment="Center">
-      <TextBlock Text="Enter envía · Shift+Enter, nueva línea" FontSize="11" Foreground="{StaticResource MutedBrush}"/>
-      <Button x:Name="ClearButton" Content="Nueva conversación" Click="Clear_Click" HorizontalAlignment="Left" Padding="0,5" Margin="0,3,0,0" BorderBrush="Transparent" Background="Transparent" FontSize="12" AutomationProperties.AutomationId="ClearButton"/>
-     </StackPanel>
-     <Button Grid.Column="1" x:Name="CancelButton" Content="Cancelar" Click="Cancel_Click" Visibility="Collapsed" Margin="0,0,6,0" VerticalAlignment="Center" AutomationProperties.AutomationId="CancelButton"/>
-     <Button Grid.Column="2" x:Name="SendButton" Content="Enviar" Click="Send_Click" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" BorderBrush="{StaticResource AccentBrush}" VerticalAlignment="Center" AutomationProperties.AutomationId="SendButton"/>
-    </Grid>
-   </Grid>
-    </TabItem>
-    <TabItem x:Name="BrowserTab" Header="ChatGPT web" AutomationProperties.AutomationId="BrowserTab">
-     <Grid>
+   <Grid Grid.Row="2" x:Name="BrowserPanel">
       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
       <WrapPanel Margin="0,0,0,8">
-       <Button Content="Inicio" Click="BrowserHome_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="BrowserHomeButton"/>
-       <Button x:Name="BrowserReloadButton" Content="Recargar" Click="BrowserReload_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="BrowserReloadButton"/>
-       <Button Content="Abrir fuera" Click="BrowserExternal_Click" Margin="0,0,0,4" ToolTip="Abrir en tu navegador habitual; tiene una sesión independiente" AutomationProperties.AutomationId="BrowserExternalButton"/>
+       <Button x:Name="CaptureButton" ToolTip="Capturar juego (Ctrl+Alt+C)" AutomationProperties.Name="Capturar juego" Click="Capture_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="CaptureButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE722;" FontSize="16"/></Button>
+       <Button x:Name="CropCaptureButton" ToolTip="Recortar captura" AutomationProperties.Name="Recortar captura" Click="CropCapture_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="CropCaptureButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7A8;" FontSize="16"/></Button>
+       <Button ToolTip="Inicio" AutomationProperties.Name="Inicio" Click="BrowserHome_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="BrowserHomeButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="16"/></Button>
+       <Button x:Name="BrowserReloadButton" ToolTip="Recargar" AutomationProperties.Name="Recargar" Click="BrowserReload_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="BrowserReloadButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" FontSize="16"/></Button>
+       <Button ToolTip="Abrir fuera" AutomationProperties.Name="Abrir fuera" Click="BrowserExternal_Click" Margin="0,0,0,4" AutomationProperties.AutomationId="BrowserExternalButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A7;" FontSize="16"/></Button>
       </WrapPanel>
       <TextBox Grid.Row="1" x:Name="BrowserAddressBox" IsReadOnly="True" Text="https://chatgpt.com/" FontSize="12" Padding="8,5" Margin="0,0,0,10"
        AutomationProperties.Name="Dirección de la página" AutomationProperties.AutomationId="BrowserAddressBox"/>
@@ -92,30 +47,26 @@
        </StackPanel>
       </Grid>
      </Grid>
-    </TabItem>
-   </TabControl>
+
    <ScrollViewer Grid.Row="2" x:Name="SettingsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
     <StackPanel>
-     <TextBlock Text="Conecta tu asistente" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,8"/>
-     <TextBlock Text="API Responses de OpenAI por defecto. También puedes usar endpoints compatibles con Chat Completions." Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
-     <Label Content="Endpoint completo" Target="{Binding ElementName=EndpointBox}" Foreground="{StaticResource InkBrush}" Padding="0,0,0,6"/>
-     <TextBox x:Name="EndpointBox" AutomationProperties.AutomationId="EndpointBox" Margin="0,0,0,12"/>
-     <Label Content="Modelo" Target="{Binding ElementName=ModelBox}" Foreground="{StaticResource InkBrush}" Padding="0,0,0,6"/>
-     <TextBox x:Name="ModelBox" AutomationProperties.AutomationId="ModelBox" Margin="0,0,0,12"/>
-     <Label Content="Clave API" Target="{Binding ElementName=ApiKeyBox}" Foreground="{StaticResource InkBrush}" Padding="0,0,0,6"/>
-     <PasswordBox x:Name="ApiKeyBox" AutomationProperties.AutomationId="ApiKeyBox" Margin="0,0,0,8"/>
-     <TextBlock Text="Se guarda cifrada para tu usuario de Windows. Vacío usa OVERLAY_API_KEY o OPENAI_API_KEY; un servidor local puede funcionar sin clave." FontSize="12" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
+     <TextBlock Text="Apariencia" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,8"/>
+     <TextBlock Text="Ajusta la opacidad del panel y de ChatGPT para ver el juego detrás. Los cambios se previsualizan al mover el control." Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
+     <Label Content="Opacidad" Target="{Binding ElementName=OpacitySlider}" Foreground="{StaticResource InkBrush}" Padding="0,0,0,6"/>
+     <Slider x:Name="OpacitySlider" Minimum="30" Maximum="100" Value="85" TickFrequency="5" IsSnapToTickEnabled="True" SmallChange="5" LargeChange="10"
+      ValueChanged="OpacitySlider_ValueChanged" AutomationProperties.Name="Opacidad del overlay" AutomationProperties.AutomationId="OpacitySlider"/>
+     <TextBlock x:Name="OpacityValueText" Text="85 %" Margin="0,8,0,18" AutomationProperties.AutomationId="OpacityValueText"/>
      <WrapPanel>
       <Button Content="Guardar" Click="SaveSettings_Click" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Margin="0,0,8,8" AutomationProperties.AutomationId="SaveSettingsButton"/>
       <Button Content="Volver al chat" Click="Back_Click" Margin="0,0,0,8" AutomationProperties.AutomationId="BackButton"/>
      </WrapPanel>
-     <TextBlock Text="La conversación permanece solo en memoria. Cambiar de proveedor o modelo inicia una nueva conversación." Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,10,0,16"/>
+     <TextBlock Text="La opacidad se guarda para la próxima vez que abras la aplicación." Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,10,0,16"/>
      <Button Content="Salir de la aplicación" Click="Exit_Click" HorizontalAlignment="Left" AutomationProperties.AutomationId="ExitButton"/>
     </StackPanel>
    </ScrollViewer>
-   <TextBlock Grid.Row="3" x:Name="StatusText" Text="Listo · Esc vuelve al juego" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0"
+   <TextBlock Grid.Row="3" x:Name="StatusText" Visibility="Collapsed" Text="Listo · Esc vuelve al juego" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0"
     AutomationProperties.AutomationId="StatusText" AutomationProperties.LiveSetting="Polite"/>
-   <TextBlock Grid.Row="3" x:Name="BrowserStatusText" Text="ChatGPT web · Esc vuelve al juego" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0" Visibility="Collapsed"
+   <TextBlock Grid.Row="3" x:Name="BrowserStatusText" Text="ChatGPT web · Esc vuelve al juego" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0"
     AutomationProperties.AutomationId="BrowserStatusText" AutomationProperties.LiveSetting="Polite"/>
   </Grid>
  </Border>
