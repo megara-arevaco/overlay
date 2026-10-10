@@ -1,68 +1,208 @@
-# Agripa
+<div align="center">
+  <img src="src/GameChatOverlay/Assets/agripa.png" width="132" height="132" alt="Agripa helmet and laurel logo">
+  <h1>Agripa</h1>
+  <p><strong>ChatGPT over your game — a private, transparent Windows overlay.</strong></p>
+  <p>
+    <img alt=".NET 8" src="https://img.shields.io/badge/.NET-8-512BD4?logo=dotnet&logoColor=white">
+    <img alt="WPF" src="https://img.shields.io/badge/UI-WPF-0078D4">
+    <img alt="WebView2" src="https://img.shields.io/badge/Browser-WebView2-2B579A">
+    <img alt="Platform" src="https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows&logoColor=white">
+    <a href="https://github.com/megara-arevaco/agripa/actions/workflows/build.yml"><img alt="Build status" src="https://github.com/megara-arevaco/agripa/actions/workflows/build.yml/badge.svg"></a>
+  </p>
+</div>
 
-An AI strategy companion inspired by Marcus Vipsanius Agrippa, a collaborator of Augustus. A helmet-and-laurel icon appears in the window, notification area, and executable.
+Agripa is a lightweight desktop companion that opens the ChatGPT website above a
+windowed or borderless game. Sign in with your own ChatGPT account and ask about
+what you are playing without switching away from the game. Agripa does not need an
+API key, an Agripa account, or a separate backend.
 
-A transparent Windows 10 (version 1809 or later) / Windows 11 overlay, built with C# and WPF. Open ChatGPT over a windowed or borderless game and sign in directly on the website. No API key is required.
+> [!NOTE]
+> Agripa is under active development. Windows is the supported platform, and
+> current builds are unsigned development builds. The ChatGPT website and account
+> are provided by OpenAI, not by this project.
 
-## Usage
+## What Agripa does
 
-- **Ctrl+Alt+Space** shows or hides the panel.
-- **Ctrl+Alt+C** or the camera button captures the window from which Agripa was opened. The overlay and its sign-in windows are hidden during capture and restored afterward. The image is copied to the clipboard; press **Ctrl+V** in ChatGPT and type your question. If there is no valid window, Agripa captures the monitor it is on. The shortcut also works while the overlay is hidden and opens the panel after capturing.
-- **Crop screenshot** opens a frozen image of the game window or monitor. Drag a rectangle in any direction and press **Enter** to copy only that area. **Esc** cancels without changing the clipboard. The frame and instructions are not included in the copied image.
-- **Esc** or **—** hides the panel and returns focus to the game when Windows allows it.
-- Drag the header to move the panel and its edges to resize it.
-- The **Home**, **Reload**, **Open externally**, and **Settings** icons show their names on hover.
-- In **Settings**, adjust opacity from **30% to 100%**, with an immediate preview. The initial opacity is **85%**. **Save** keeps the value across restarts; **Return to chat** discards unsaved changes. Opacity affects the panel, webpage, and sign-in windows.
-- Exit from **Settings → Exit application** or the notification area. **Alt+F4** hides the panel and leaves Agripa running in the notification area.
+- Keeps a resizable ChatGPT panel above a game, with a configurable opacity.
+- Shows or hides the panel with **Ctrl+Alt+Space** or the notification-area icon.
+- Captures the game window or its monitor, temporarily hiding Agripa and its sign-in
+  windows; the image is copied to the clipboard for you to paste into ChatGPT.
+- Lets you select and copy a rectangular crop from a frozen screenshot.
+- Remembers opacity and the selected English or Spanish interface language.
+- Keeps the WebView2 browser profile and cookies between launches; **Open externally**
+  uses your regular browser and its separate session.
+- Works without an API key and does not automate sign-in, read game memory, or send
+  screenshots automatically.
 
-ChatGPT opens when the application starts. The panel measures 700 × 760 DIP and adapts to the work area. Only one instance is allowed per Windows session. If the shortcut is already in use, open the panel from the notification-area icon.
+## Requirements
 
-A game may pause when it loses focus. Compatibility with exclusive full-screen mode and anti-cheat systems depends on the game.
+### To use Agripa
 
-## Settings and session
+- Windows 10 version 1809 or later, or Windows 11.
+- Microsoft Edge [WebView2 Evergreen Runtime](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
+- Internet access and a ChatGPT account to use the ChatGPT website. ChatGPT account
+  access and service availability are controlled by OpenAI.
+- A windowed or borderless game. Compatibility with exclusive full-screen mode and
+  anti-cheat software depends on the game.
 
-Opacity is stored in `%LOCALAPPDATA%\GameChatOverlay\settings.json`. Existing configuration files can be loaded; legacy API fields are ignored. When saved, the file contains only current settings.
+The self-contained executable does not require a separate .NET runtime. WebView2
+Runtime is installed separately.
 
-The web profile is stored in `%LOCALAPPDATA%\GameChatOverlay\BrowserProfile`. Cookies can keep the session signed in until the website expires them. To sign out, use the ChatGPT account menu. Sign-in windows share this profile. **Open externally** uses your regular browser and its separate session.
+### To develop Agripa
 
-The overlay does not extract webpage content, inject scripts, or automate sign-in. Captures are manual and use the pixels visible on screen; if another app covers the game, it may appear in the image. Images are not saved or sent automatically. The overlay does not read game memory. The browser uses WPF's composition control so its content can participate in the window's transparency. ChatGPT availability and support for embedded browsers depend on the website.
+- The [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0).
+- Git.
+- Windows 10 or 11 for running the application and the interactive E2E test.
 
-If WebView2 is missing, select **Download WebView2**, install it, then select **Reload**. [Download WebView2 from Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/#download-section).
+The project can target Windows from other operating systems with Windows targeting
+enabled, but the interface and its UI tests require an interactive Windows desktop.
 
-## Build and publish
+## Using Agripa
 
-Install the .NET 8 SDK and run:
+### Show and hide the panel
+
+Press **Ctrl+Alt+Space** to show or hide Agripa. **Esc** or the **—** button hides
+the panel and returns focus to the game when Windows allows it. **Alt+F4** also
+hides the panel; it does not exit the application. Use **Settings → Exit application**
+or the notification-area menu to quit.
+
+Agripa opens ChatGPT when it starts and allows only one instance per Windows session.
+If the shortcut is already in use, open the panel from the notification area. A game
+may pause when it loses focus.
+
+### Capture game context
+
+Press **Ctrl+Alt+C** or select the camera button to capture the window from which
+Agripa was opened. The panel and its sign-in windows are hidden during capture and
+restored afterward. Agripa copies the image to the clipboard; press **Ctrl+V** in
+ChatGPT and write your question. If there is no valid game window, Agripa captures
+the monitor it is on. The shortcut also works while the panel is hidden and opens it
+after the capture.
+
+Select **Crop screenshot** to open a frozen image of the game window or monitor.
+Drag a rectangle in any direction and press **Enter** to copy that area. **Esc**
+cancels without changing the clipboard. The selection frame and instructions are not
+included in the copied image.
+
+Captures use visible screen pixels. If another application covers the game, it may
+appear in the image. Agripa does not save captures or send them to ChatGPT; you
+choose whether to paste them into the conversation.
+
+### Adjust appearance and language
+
+Open **Settings** to adjust opacity from **30% to 100%**. The preview updates
+immediately and the default is **85%**. **Save** keeps the opacity and selected
+interface language between launches; **Return to chat** discards unsaved changes.
+
+The opacity setting affects the panel, webpage, and sign-in windows. Agripa supports
+English and Spanish interface text.
+
+### Keep or end your ChatGPT session
+
+The embedded browser retains its profile and cookies until the website expires them.
+To sign out, use the ChatGPT account menu. Sign-in windows share the same profile.
+**Open externally** opens the page in your regular browser, which has a separate
+session.
+
+## Development
+
+Clone the repository and build the application from its root:
+
+```powershell
+git clone https://github.com/megara-arevaco/agripa.git
+cd agripa
+dotnet build src/GameChatOverlay/GameChatOverlay.csproj -c Release --nologo
+```
+
+Run the application from source:
 
 ```powershell
 dotnet run --project src/GameChatOverlay/GameChatOverlay.csproj -c Release
 ```
 
-To publish a portable Windows x64 executable:
-
-```powershell
-dotnet publish src/GameChatOverlay/GameChatOverlay.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/win-x64
-```
-
-Run `artifacts\win-x64\Agripa.exe`. .NET does not need to be installed separately; WebView2 Runtime is installed separately. The executable is unsigned. For ARM64, replace `win-x64` with `win-arm64`. Cross-compilation checks C#/XAML, but the interface runs only on Windows.
-
-## E2E validation
-
-On an interactive, unlocked Windows desktop, close the overlay, build Release, and run:
+Validate the UI on an interactive, unlocked Windows desktop. Close any running
+Agripa instance, build Release, and run:
 
 ```powershell
 powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File tests/Overlay.E2E.ps1
 ```
 
-The test requires WebView2 and uses a local page, a temporary profile, and a window that simulates a game. It checks browser startup, the absence of the Chat API, initial opacity, saving, discarding, and restoration after restart; it also checks topmost behavior, shortcuts, Esc inside the webpage, focus return, popups, reload, and cookie persistence. It tests capture by button and shortcut, overlay exclusion, manual cropping, cancellation, crop dimensions, clipboard contents, and pasting an image into a webpage. Do not interact with the keyboard during the test.
+The E2E test requires WebView2 and uses a local page, a temporary browser profile,
+and a window that simulates a game. It checks startup, opacity, saving and discarding
+settings, restart persistence, shortcuts, focus behavior, popups, cookies, capture,
+overlay exclusion, cropping, clipboard contents, and pasting an image into a webpage.
+Do not interact with the keyboard while the test runs. It does not validate real
+ChatGPT sign-in or compatibility with a particular game.
 
-The test does not check real sign-in or compatibility with a specific game. `OVERLAY_BROWSER_TEST_URL` can replace the initial page with an HTTP URL on loopback; `OVERLAY_SETTINGS_DIR` can isolate test data.
+The GitHub Actions workflow builds and publishes the self-contained x64 artifact on
+Windows. It does not run the interactive UI test, which requires an unlocked desktop.
+
+## Building Windows executables
+
+To publish a self-contained single-file executable for Windows x64:
+
+```powershell
+dotnet publish src/GameChatOverlay/GameChatOverlay.csproj `
+  -c Release -r win-x64 --self-contained true `
+  -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true `
+  -o artifacts/win-x64
+```
+
+Run `artifacts\win-x64\Agripa.exe`. The executable is unsigned. To build for ARM64,
+replace `win-x64` with `win-arm64`. WebView2 Evergreen Runtime is still required.
+
+Cross-building can compile C#/XAML, but final UI verification and E2E testing must
+run on Windows.
 
 ## Project structure
 
-- `MainWindow.xaml` / `.cs`: interface, opacity, focus, settings, and notification area.
-- `MainWindow.Browser.cs`: WebView2 browser, navigation, profile, and sign-in windows.
-- `MainWindow.Capture.cs`: manual window or monitor capture and clipboard copy.
-- `ScreenshotCropWindow.xaml` / `.cs`: rectangular selection over a frozen capture.
-- `SettingsStore.cs`: JSON settings.
-- `NativeMethods.cs`: global shortcut and focus management through Win32.
-- `App.xaml` / `.cs`: resources, startup, and single-instance control.
+```text
+agripa/
+├── src/GameChatOverlay/       WPF application and WebView2 integration
+│   ├── Assets/                Agripa PNG and Windows icon
+│   ├── Strings/               English and Spanish resource dictionaries
+│   ├── App.xaml(.cs)          Startup, language resources, and single-instance guard
+│   ├── MainWindow.xaml(.cs)   Panel, settings, focus, and notification area
+│   ├── MainWindow.Browser.cs  WebView2 navigation, profile, and sign-in windows
+│   ├── MainWindow.Capture.cs  Game-window/monitor capture and clipboard handling
+│   └── ScreenshotCropWindow   Rectangular selection over a captured image
+├── tests/                     Interactive Windows E2E test
+├── .github/workflows/         Windows build and artifact workflow
+└── README.md                  Project guide
+```
+
+## Publishing a release
+
+The current GitHub Actions workflow builds an unsigned self-contained x64 executable
+and uploads it as a workflow artifact. It does not create a GitHub Release or sign the
+binary. To distribute a build, review and test the artifact on Windows before
+publishing it. Do not treat the workflow artifact as a signed production installer.
+
+## Data locations and privacy
+
+Agripa stores settings in
+`%LOCALAPPDATA%\GameChatOverlay\settings.json`. The file contains the selected
+opacity and language. Existing settings files with legacy API fields can be loaded;
+those fields are ignored and are not written back. `OVERLAY_SETTINGS_DIR` can be set
+to isolate test data.
+
+The WebView2 profile, including cookies, is stored in
+`%LOCALAPPDATA%\GameChatOverlay\BrowserProfile`. This profile keeps the ChatGPT
+session signed in until the website expires it. The **Open externally** action uses
+your regular browser's separate profile.
+
+Agripa does not extract page content, inject scripts, automate sign-in, or read game
+memory. Screenshots are captured manually from visible pixels and remain on the
+clipboard unless you paste them into a website. ChatGPT receives only content you
+choose to submit through its website.
+
+## Updating the application icon
+
+The high-resolution artwork is `src/GameChatOverlay/Assets/agripa.png`; the WPF
+application and notification-area icon use `src/GameChatOverlay/Assets/agripa.ico`.
+Keep both assets aligned when replacing the icon. The repository does not currently
+include an icon-generation script.
+
+## License
+
+This repository does not currently include a license file.
