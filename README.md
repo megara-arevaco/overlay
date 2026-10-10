@@ -23,12 +23,15 @@ API key, an Agripa account, or a separate backend.
 
 ## What Agripa does
 
-- Keeps a resizable ChatGPT panel above a game, with a configurable opacity.
-- Shows or hides the panel with **Ctrl+Alt+Space** or the notification-area icon.
+- Keeps a resizable ChatGPT panel above a game, remembering its size and position and recovering it when a monitor is disconnected.
+- Shows or hides the panel with a configurable global shortcut (default **Ctrl+Alt+Space**) or the notification-area icon.
+- Provides compact-panel and click-through modes. Click-through sends mouse input to the game while the panel stays visible; its shortcut and tray item restore interaction.
+- Lets you assign distinct global shortcuts for show/hide, capture, click-through, compact mode, and browser opacity up/down, with conflict checks and rollback when Windows reports a shortcut is already in use.
+- Saves manually selected local profiles with their own position, size, and opacity. Agripa does not identify games or read game memory.
 - Captures the game window or its monitor, temporarily hiding Agripa and its sign-in
   windows; the image is copied to the clipboard for you to paste into ChatGPT.
 - Lets you select and copy a rectangular crop from a frozen screenshot.
-- Remembers opacity and the selected English or Spanish interface language.
+- Remembers opacity, window geometry, shortcuts, local profiles, and the selected English or Spanish interface language. Corrupt settings are preserved and recovered from the last valid backup when available.
 - Keeps the WebView2 browser profile and cookies between launches; **Open externally**
   uses your regular browser and its separate session.
 - Works without an API key and does not automate sign-in, read game memory, or send
@@ -61,19 +64,20 @@ enabled, but the interface and its UI tests require an interactive Windows deskt
 
 ### Show and hide the panel
 
-Press **Ctrl+Alt+Space** to show or hide Agripa. **Esc** or the **—** button hides
+Press the configured show/hide shortcut (default **Ctrl+Alt+Space**) to show or hide Agripa. **Esc** or the **—** button hides
 the panel and returns focus to the game when Windows allows it. **Alt+F4** also
 hides the panel; it does not exit the application. Use **Settings → Exit application**
 or the notification-area menu to quit.
 
-Agripa opens ChatGPT when it starts and allows only one instance per Windows session.
-If the shortcut is already in use, open the panel from the notification area. A game
-may pause when it loses focus.
+Agripa opens ChatGPT when it starts and allows only one instance per Windows session. Shortcuts can be reassigned in Settings by selecting an action and pressing a key combination with Ctrl, Alt, Shift, or Windows. Each action must use a distinct combination; if another application owns a shortcut, Agripa tries to restore the previous assignments and the tray remains available. The default opacity shortcuts are **Ctrl+Alt+O** (increase) and **Ctrl+Alt+Shift+O** (decrease), in 5% steps. A game may pause when it loses focus.
+
+Select **Compact mode** or use its shortcut to reduce Agripa to a small floating tab; select the restore button or press the shortcut again to return. **Click-through** keeps the panel visible while mouse clicks reach the game. Use its configured shortcut to restore normal interaction; the notification-area menu also offers **Turn off click-through** if a shortcut is unavailable. These modes do not guarantee compatibility with a particular game or anti-cheat system.
+
+Local profiles are named and selected manually in Settings. A profile stores opacity, position, size, and monitor association; Agripa never auto-detects the running game.
 
 ### Capture game context
 
-Press **Ctrl+Alt+C** or select the camera button to capture the window from which
-Agripa was opened. The panel and its sign-in windows are hidden during capture and
+Press the configured capture shortcut (default **Ctrl+Alt+C**) or select the camera button to capture the window from which Agripa was opened. The panel and its sign-in windows are hidden during capture and
 restored afterward. Agripa copies the image to the clipboard; press **Ctrl+V** in
 ChatGPT and write your question. If there is no valid game window, Agripa captures
 the monitor it is on. The shortcut also works while the panel is hidden and opens it
@@ -90,12 +94,9 @@ choose whether to paste them into the conversation.
 
 ### Adjust appearance and language
 
-Open **Settings** to adjust opacity from **30% to 100%**. The preview updates
-immediately and the default is **85%**. **Save** keeps the opacity and selected
-interface language between launches; **Return to chat** discards unsaved changes.
+Open **Settings** to adjust browser-content opacity from **30% to 100%**. The preview updates immediately and the default is **85%**. Toolbar controls and status text remain opaque and legible. **Save** keeps opacity and shortcut assignments; language changes are saved immediately. **Return to chat** discards an unsaved opacity or shortcut preview.
 
-The opacity setting affects the panel, webpage, and sign-in windows. Agripa supports
-English and Spanish interface text.
+Agripa supports English and Spanish interface text. On first launch it explains that Esc and Alt+F4 hide the panel rather than exit; **Quit application** remains available in Settings and the tray menu.
 
 ### Keep or end your ChatGPT session
 
@@ -129,8 +130,9 @@ powershell.exe -NoProfile -STA -ExecutionPolicy Bypass -File tests/Overlay.E2E.p
 
 The E2E test requires WebView2 and uses a local page, a temporary browser profile,
 and a window that simulates a game. It checks startup, opacity, saving and discarding
-settings, restart persistence, shortcuts, focus behavior, popups, cookies, capture,
-overlay exclusion, cropping, clipboard contents, and pasting an image into a webpage.
+settings, geometry persistence, shortcut assignment/conflicts and opacity steps, click-through recovery,
+compact mode, local profiles, corrupt-settings recovery, focus behavior, popups, cookies,
+capture, overlay exclusion, cropping, clipboard contents, and pasting an image into a webpage.
 Do not interact with the keyboard while the test runs. It does not validate real
 ChatGPT sign-in or compatibility with a particular game.
 
@@ -171,6 +173,8 @@ agripa/
 └── README.md                  Project guide
 ```
 
+For credential-free local Windows packaging, see [docs/local-distribution.md](docs/local-distribution.md) and `scripts/package-local.ps1`.
+
 ## Publishing a release
 
 The current GitHub Actions workflow builds an unsigned self-contained x64 executable
@@ -181,10 +185,12 @@ publishing it. Do not treat the workflow artifact as a signed production install
 ## Data locations and privacy
 
 Agripa stores settings in
-`%LOCALAPPDATA%\GameChatOverlay\settings.json`. The file contains the selected
-opacity and language. Existing settings files with legacy API fields can be loaded;
-those fields are ignored and are not written back. `OVERLAY_SETTINGS_DIR` can be set
-to isolate test data.
+`%LOCALAPPDATA%\GameChatOverlay\settings.json`. The file contains opacity, interface
+language, panel geometry and monitor name, shortcut assignments, a one-time hide notice
+flag, and any named local profiles. A last-known-good `settings.json.bak` is maintained;
+malformed files are preserved as `settings.json.corrupt` (timestamped copies are used if needed) and safe defaults are used if no valid backup can be read. Existing settings files with legacy API fields can be loaded;
+those fields are ignored and are not written back. `OVERLAY_SETTINGS_DIR` can be set to
+isolate test data.
 
 The WebView2 profile, including cookies, is stored in
 `%LOCALAPPDATA%\GameChatOverlay\BrowserProfile`. This profile keeps the ChatGPT

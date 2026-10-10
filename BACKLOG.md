@@ -1,21 +1,22 @@
-# Mejoras pendientes de Agripa
+# Backlog de Agripa
 
-Mejoras propuestas para que el overlay resulte más cómodo durante una partida.
-Pendientes de implementación. Primera prioridad: recordar posición y tamaño,
-modo compacto y dejar pasar los clics al juego.
+Estado del ciclo de mejoras no comerciales: persistencia de geometría, modo compacto,
+paso de clics, atajos configurables, perfiles locales y compactación de la barra ya están
+implementados. La validación interactiva de WPF/WebView2 y compatibilidad por juego sigue
+pendiente en Windows. La matriz completa está en `docs/implementation-review.md`.
 
 ## Prioridad inicial
 
-- [ ] Recordar posición y tamaño del panel entre sesiones, también con varios monitores.
-- [ ] Añadir un modo compacto que reduzca el panel a una pestaña flotante y permita desplegarlo con el atajo.
-- [ ] Añadir un modo que deje pasar los clics al juego y permita recuperar el control del overlay con el atajo.
+- [x] Recordar posición y tamaño del panel entre sesiones, también con varios monitores, y recuperar geometría fuera de pantalla.
+- [x] Añadir un modo compacto que reduzca el panel a una pestaña flotante y permita desplegarlo con el atajo.
+- [x] Añadir un modo que deje pasar los clics al juego y permita recuperar el control del overlay con el atajo o bandeja.
 
 ## Otras mejoras
 
-- [ ] Separar la opacidad del navegador y de la barra de controles para mantener los iconos legibles.
-- [ ] Permitir configurar los atajos para mostrar u ocultar, cambiar la opacidad y activar el modo compacto.
-- [ ] Guardar perfiles por juego con posición, tamaño y opacidad propios.
-- [ ] Compactar la barra, unificar el tamaño de los botones y reforzar la identidad visual de Agripa.
+- [x] Separar la opacidad del contenido web y de la barra de controles para mantener acciones y estados legibles.
+- [x] Permitir configurar los atajos para mostrar u ocultar, capturar, ajustar la opacidad, activar el paso de clics y alternar el modo compacto, con detección de conflictos.
+- [x] Guardar perfiles locales seleccionables manualmente con posición, tamaño, monitor y opacidad propios; no se detectan procesos de juego.
+- [x] Compactar la barra, unificar el tamaño de los botones y mantener la identidad visual existente.
 
 ## Contexto de la partida implementado
 

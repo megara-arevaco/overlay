@@ -4,77 +4,131 @@
  xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
  Title="{DynamicResource AppTitle}" Icon="Assets/agripa.ico" Width="700" Height="760" MinWidth="400" MinHeight="520"
  AllowsTransparency="True" WindowStyle="None" ResizeMode="CanResize" Topmost="True" ShowInTaskbar="False"
- Background="{StaticResource BackgroundBrush}" Foreground="{StaticResource InkBrush}"
+ Background="Transparent" Foreground="{StaticResource InkBrush}"
  FontFamily="Segoe UI" FontSize="14" UseLayoutRounding="True" PreviewKeyDown="Window_PreviewKeyDown">
  <shell:WindowChrome.WindowChrome>
   <shell:WindowChrome CaptionHeight="0" ResizeBorderThickness="6" CornerRadius="8" GlassFrameThickness="0"/>
  </shell:WindowChrome.WindowChrome>
- <Border BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="18,14,18,12">
+ <Border x:Name="WindowFrame" Background="Transparent" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" Padding="14,10,14,9">
   <Grid>
-   <Grid.RowDefinitions>
-    <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/>
-    <RowDefinition Height="Auto"/>
-   </Grid.RowDefinitions>
-   <Grid>
-    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-    <StackPanel MouseLeftButtonDown="Title_MouseLeftButtonDown" Background="Transparent" Margin="0,0,8,0">
-     <StackPanel Orientation="Horizontal">
-      <Image Source="Assets/agripa.ico" Width="24" Height="24" Margin="0,0,8,0"/>
-      <TextBlock Text="Agripa" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center"/>
+   <Grid x:Name="ExpandedPanel">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid Background="{StaticResource BackgroundBrush}">
+     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+     <StackPanel Orientation="Horizontal" MouseLeftButtonDown="Title_MouseLeftButtonDown" Background="Transparent" VerticalAlignment="Center" Margin="0,0,8,0">
+      <Image Source="Assets/agripa.ico" Width="22" Height="22" Margin="0,0,7,0"/>
+      <TextBlock Text="Agripa" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+      <TextBlock x:Name="HotkeyHint" Text="{DynamicResource HotkeyHint}" Foreground="{StaticResource MutedBrush}" FontSize="11" VerticalAlignment="Center"/>
      </StackPanel>
-     <TextBlock x:Name="HotkeyHint" Text="{DynamicResource HotkeyHint}" Foreground="{StaticResource MutedBrush}" FontSize="11" Margin="0,4,0,0"/>
-    </StackPanel>
-    <Button Grid.Column="1" x:Name="SettingsButton" ToolTip="{DynamicResource Settings}" AutomationProperties.Name="{DynamicResource Settings}" Click="Settings_Click" Margin="0,0,6,0" VerticalAlignment="Top" AutomationProperties.AutomationId="SettingsButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="16"/></Button>
-    <Button Grid.Column="2" Content="—" Click="Hide_Click" VerticalAlignment="Top" Padding="10,8" ToolTip="{DynamicResource HideEsc}" AutomationProperties.Name="{DynamicResource HideOverlay}" AutomationProperties.AutomationId="HideButton"/>
-   </Grid>
-   <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}" Margin="0,14,0,12"/>
-   <Grid Grid.Row="2" x:Name="BrowserPanel">
-      <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-      <WrapPanel Margin="0,0,0,8">
-       <Button x:Name="CaptureButton" ToolTip="{DynamicResource CaptureShortcut}" AutomationProperties.Name="{DynamicResource CaptureName}" Click="Capture_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="CaptureButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE722;" FontSize="16"/></Button>
-       <Button x:Name="CropCaptureButton" ToolTip="{DynamicResource CropCapture}" AutomationProperties.Name="{DynamicResource CropName}" Click="CropCapture_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="CropCaptureButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7A8;" FontSize="16"/></Button>
-       <Button ToolTip="{DynamicResource Home}" AutomationProperties.Name="{DynamicResource Home}" Click="BrowserHome_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="BrowserHomeButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE80F;" FontSize="16"/></Button>
-       <Button x:Name="BrowserReloadButton" ToolTip="{DynamicResource Reload}" AutomationProperties.Name="{DynamicResource Reload}" Click="BrowserReload_Click" Margin="0,0,6,4" AutomationProperties.AutomationId="BrowserReloadButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE72C;" FontSize="16"/></Button>
-       <Button ToolTip="{DynamicResource OpenExternal}" AutomationProperties.Name="{DynamicResource OpenExternal}" Click="BrowserExternal_Click" Margin="0,0,0,4" AutomationProperties.AutomationId="BrowserExternalButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE8A7;" FontSize="16"/></Button>
-      </WrapPanel>
-      <TextBox Grid.Row="1" x:Name="BrowserAddressBox" IsReadOnly="True" Text="https://chatgpt.com/" FontSize="12" Padding="8,5" Margin="0,0,0,10"
-       AutomationProperties.Name="{DynamicResource PageAddress}" AutomationProperties.AutomationId="BrowserAddressBox"/>
-      <Grid Grid.Row="2">
-       <Grid x:Name="BrowserHost"/>
-       <StackPanel x:Name="BrowserNotice" VerticalAlignment="Center" Margin="16">
+     <Button Grid.Column="1" x:Name="SettingsButton" ToolTip="{DynamicResource Settings}" AutomationProperties.Name="{DynamicResource Settings}" Click="Settings_Click" Margin="0,0,5,0" AutomationProperties.AutomationId="SettingsButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE713;" FontSize="15"/></Button>
+     <Button Grid.Column="2" x:Name="CompactButton" ToolTip="{DynamicResource CompactMode}" AutomationProperties.Name="{DynamicResource CompactMode}" Click="Compact_Click" Margin="0,0,5,0" AutomationProperties.AutomationId="CompactButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="15"/></Button>
+     <Button Grid.Column="3" x:Name="HideButton" Content="—" Click="Hide_Click" Padding="11,5" ToolTip="{DynamicResource HideEsc}" AutomationProperties.Name="{DynamicResource HideOverlay}" AutomationProperties.AutomationId="HideButton"/>
+    </Grid>
+    <Border Grid.Row="1" Height="1" Background="{StaticResource BorderBrush}" Margin="0,8,0,8"/>
+    <Grid Grid.Row="2" x:Name="BrowserPanel">
+     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+     <DockPanel Margin="0,0,0,6">
+      <Button x:Name="CaptureButton" ToolTip="{DynamicResource CaptureShortcut}" AutomationProperties.Name="{DynamicResource CaptureName}" Click="Capture_Click" Margin="0,0,5,0" AutomationProperties.AutomationId="CaptureButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE722;" FontSize="15"/></Button>
+      <Button x:Name="CropCaptureButton" ToolTip="{DynamicResource CropCapture}" AutomationProperties.Name="{DynamicResource CropName}" Click="CropCapture_Click" Margin="0,0,5,0" AutomationProperties.AutomationId="CropCaptureButton"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE7A8;" FontSize="15"/></Button>
+      <Button x:Name="BrowserMoreButton" ToolTip="{DynamicResource MoreBrowserActions}" AutomationProperties.Name="{DynamicResource MoreBrowserActions}" Click="BrowserMore_Click" AutomationProperties.AutomationId="BrowserMoreButton">
+       <TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE712;" FontSize="15"/>
+       <Button.ContextMenu>
+        <ContextMenu x:Name="BrowserMoreMenu" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource InkBrush}" BorderBrush="{StaticResource BorderBrush}">
+         <MenuItem Header="{DynamicResource Home}" Click="BrowserHome_Click"/>
+         <MenuItem Header="{DynamicResource Reload}" Click="BrowserReload_Click"/>
+         <MenuItem Header="{DynamicResource OpenExternal}" Click="BrowserExternal_Click"/>
+        </ContextMenu>
+       </Button.ContextMenu>
+      </Button>
+     </DockPanel>
+     <TextBox Grid.Row="1" x:Name="BrowserAddressBox" IsReadOnly="True" Text="https://chatgpt.com/" FontSize="12" Padding="7,4" Margin="0,0,0,8"
+      AutomationProperties.Name="{DynamicResource PageAddress}" AutomationProperties.AutomationId="BrowserAddressBox"/>
+     <Grid Grid.Row="2">
+      <Grid x:Name="BrowserHost"/>
+      <Border x:Name="BrowserNotice" VerticalAlignment="Center" HorizontalAlignment="Center" Background="{StaticResource BackgroundBrush}" Padding="14" Visibility="Visible">
+       <StackPanel>
         <TextBlock x:Name="BrowserNoticeText" Text="{DynamicResource PreparingBrowser}" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,14"/>
         <Button x:Name="InstallBrowserButton" Content="{DynamicResource DownloadWebView}" Click="InstallBrowser_Click" HorizontalAlignment="Left" Visibility="Collapsed" AutomationProperties.AutomationId="InstallBrowserButton"/>
        </StackPanel>
-      </Grid>
+      </Border>
      </Grid>
-
-   <ScrollViewer Grid.Row="2" x:Name="SettingsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
-    <StackPanel>
-     <TextBlock Text="{DynamicResource Appearance}" FontSize="20" FontWeight="SemiBold" Margin="0,0,0,8"/>
-     <TextBlock Text="{DynamicResource AppearanceHelp}" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,18"/>
-     <Label Content="{DynamicResource Opacity}" Target="{Binding ElementName=OpacitySlider}" Foreground="{StaticResource InkBrush}" Padding="0,0,0,6"/>
-     <Slider x:Name="OpacitySlider" Minimum="30" Maximum="100" Value="85" TickFrequency="5" IsSnapToTickEnabled="True" SmallChange="5" LargeChange="10"
-      ValueChanged="OpacitySlider_ValueChanged" AutomationProperties.Name="{DynamicResource OverlayOpacity}" AutomationProperties.AutomationId="OpacitySlider"/>
-     <TextBlock x:Name="OpacityValueText" Text="85 %" Margin="0,8,0,18" AutomationProperties.AutomationId="OpacityValueText"/>
-     <StackPanel Orientation="Horizontal" Margin="0,10,0,14">
-      <TextBlock Text="{DynamicResource LanguageLabel}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-      <ComboBox x:Name="LanguageSelector" Width="140" SelectedValuePath="Tag" SelectionChanged="LanguageSelector_SelectionChanged" AutomationProperties.Name="{DynamicResource LanguageLabel}">
-       <ComboBoxItem Content="Español" Tag="es"/>
-       <ComboBoxItem Content="English" Tag="en"/>
-      </ComboBox>
+    </Grid>
+    <ScrollViewer Grid.Row="2" x:Name="SettingsPanel" Background="{StaticResource BackgroundBrush}" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+     <StackPanel>
+      <TextBlock Text="{DynamicResource Appearance}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,4"/>
+      <TextBlock Text="{DynamicResource AppearanceHelp}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,10"/>
+      <DockPanel Margin="0,0,0,5">
+       <TextBlock Text="{DynamicResource Opacity}" VerticalAlignment="Center"/>
+       <TextBlock x:Name="OpacityValueText" DockPanel.Dock="Right" Text="85 %" Margin="8,0,0,0" AutomationProperties.AutomationId="OpacityValueText"/>
+      </DockPanel>
+      <Slider x:Name="OpacitySlider" Minimum="30" Maximum="100" Value="85" TickFrequency="5" IsSnapToTickEnabled="True" SmallChange="5" LargeChange="10"
+       ValueChanged="OpacitySlider_ValueChanged" AutomationProperties.Name="{DynamicResource OverlayOpacity}" AutomationProperties.AutomationId="OpacitySlider"/>
+      <StackPanel Orientation="Horizontal" Margin="0,7,0,10">
+       <TextBlock Text="{DynamicResource LanguageLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+       <ComboBox x:Name="LanguageSelector" Width="128" SelectedValuePath="Tag" SelectionChanged="LanguageSelector_SelectionChanged" AutomationProperties.Name="{DynamicResource LanguageLabel}">
+        <ComboBoxItem Content="Español" Tag="es"/><ComboBoxItem Content="English" Tag="en"/>
+       </ComboBox>
+      </StackPanel>
+      <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,0,0,9"/>
+      <TextBlock Text="{DynamicResource Shortcuts}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+      <TextBlock Text="{DynamicResource ShortcutsHelp}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,7"/>
+      <Grid>
+       <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/></Grid.ColumnDefinitions>
+       <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+       <TextBlock Text="{DynamicResource ShowHideAction}" VerticalAlignment="Center" Margin="0,3"/>
+       <Button x:Name="ShowHideHotkeyButton" Grid.Column="1" Content="Ctrl+Alt+Space" Tag="Ctrl+Alt+Space" Click="ShortcutButton_Click" Margin="4,2" AutomationProperties.Name="{DynamicResource ShowHideAction}" AutomationProperties.AutomationId="ShowHideHotkeyButton"/>
+       <TextBlock Grid.Row="1" Text="{DynamicResource CaptureName}" VerticalAlignment="Center" Margin="0,3"/>
+       <Button x:Name="CaptureHotkeyButton" Grid.Row="1" Grid.Column="1" Content="Ctrl+Alt+C" Tag="Ctrl+Alt+C" Click="ShortcutButton_Click" Margin="4,2" AutomationProperties.Name="{DynamicResource CaptureName}" AutomationProperties.AutomationId="CaptureHotkeyButton"/>
+       <TextBlock Grid.Row="2" Text="{DynamicResource ClickThroughAction}" VerticalAlignment="Center" Margin="0,3"/>
+       <Button x:Name="ClickThroughHotkeyButton" Grid.Row="2" Grid.Column="1" Content="Ctrl+Alt+P" Tag="Ctrl+Alt+P" Click="ShortcutButton_Click" Margin="4,2" AutomationProperties.Name="{DynamicResource ClickThroughAction}" AutomationProperties.AutomationId="ClickThroughHotkeyButton"/>
+       <TextBlock Grid.Row="3" Text="{DynamicResource CompactMode}" VerticalAlignment="Center" Margin="0,3"/>
+       <Button x:Name="CompactHotkeyButton" Grid.Row="3" Grid.Column="1" Content="Ctrl+Alt+M" Tag="Ctrl+Alt+M" Click="ShortcutButton_Click" Margin="4,2" AutomationProperties.Name="{DynamicResource CompactMode}" AutomationProperties.AutomationId="CompactHotkeyButton"/>
+       <TextBlock Grid.Row="4" Text="{DynamicResource OpacityIncreaseAction}" VerticalAlignment="Center" Margin="0,3"/>
+       <Button x:Name="OpacityIncreaseHotkeyButton" Grid.Row="4" Grid.Column="1" Content="Ctrl+Alt+O" Tag="Ctrl+Alt+O" Click="ShortcutButton_Click" Margin="4,2" AutomationProperties.AutomationId="OpacityIncreaseHotkeyButton"/>
+       <TextBlock Grid.Row="5" Text="{DynamicResource OpacityDecreaseAction}" VerticalAlignment="Center" Margin="0,3"/>
+       <Button x:Name="OpacityDecreaseHotkeyButton" Grid.Row="5" Grid.Column="1" Content="Ctrl+Alt+Shift+O" Tag="Ctrl+Alt+Shift+O" Click="ShortcutButton_Click" Margin="4,2" AutomationProperties.AutomationId="OpacityDecreaseHotkeyButton"/>
+      </Grid>
+      <TextBlock Text="{DynamicResource TrayRecoveryHelp}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,4,0,7"/>
+      <CheckBox x:Name="ClickThroughToggle" Content="{DynamicResource ClickThroughAction}" Checked="ClickThroughToggle_Changed" Unchecked="ClickThroughToggle_Changed" AutomationProperties.AutomationId="ClickThroughToggle" Margin="0,0,0,2"/>
+      <TextBlock Text="{DynamicResource ClickThroughHelp}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,9"/>
+      <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,0,0,9"/>
+      <TextBlock Text="{DynamicResource GameProfiles}" FontWeight="SemiBold" Margin="0,0,0,3"/>
+      <TextBlock Text="{DynamicResource ProfilesHelp}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,6"/>
+      <TextBlock Text="{DynamicResource ProfileName}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,0,0,3"/>
+      <TextBox x:Name="ProfileNameBox" AutomationProperties.Name="{DynamicResource ProfileName}" Margin="0,0,0,5"/>
+      <DockPanel Margin="0,0,0,5">
+       <ComboBox x:Name="ProfileSelector" SelectionChanged="ProfileSelector_SelectionChanged" AutomationProperties.Name="{DynamicResource GameProfiles}"/>
+       <Button DockPanel.Dock="Right" Content="{DynamicResource ApplyProfile}" Click="ApplyProfile_Click" Margin="5,0,0,0" AutomationProperties.AutomationId="ApplyProfileButton"/>
+      </DockPanel>
+      <WrapPanel Margin="0,0,0,8">
+       <Button Content="{DynamicResource SaveProfile}" Click="SaveProfile_Click" Margin="0,0,5,4" AutomationProperties.AutomationId="SaveProfileButton"/>
+       <Button Content="{DynamicResource DeleteProfile}" Click="DeleteProfile_Click" Margin="0,0,0,4" AutomationProperties.AutomationId="DeleteProfileButton"/>
+      </WrapPanel>
+      <WrapPanel>
+       <Button Content="{DynamicResource Save}" Click="SaveSettings_Click" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Margin="0,0,7,7" AutomationProperties.AutomationId="SaveSettingsButton"/>
+       <Button Content="{DynamicResource BackToChat}" Click="Back_Click" Margin="0,0,0,7" AutomationProperties.AutomationId="BackButton"/>
+      </WrapPanel>
+      <Button Content="{DynamicResource ExitApp}" Click="Exit_Click" HorizontalAlignment="Left" Margin="0,1,0,6" AutomationProperties.AutomationId="ExitButton"/>
      </StackPanel>
-     <WrapPanel>
-      <Button Content="{DynamicResource Save}" Click="SaveSettings_Click" Background="{StaticResource AccentBrush}" Foreground="{StaticResource BackgroundBrush}" Margin="0,0,8,8" AutomationProperties.AutomationId="SaveSettingsButton"/>
-      <Button Content="{DynamicResource BackToChat}" Click="Back_Click" Margin="0,0,0,8" AutomationProperties.AutomationId="BackButton"/>
-     </WrapPanel>
-     <TextBlock Text="{DynamicResource OpacityHelp}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,10,0,16"/>
-     <Button Content="{DynamicResource ExitApp}" Click="Exit_Click" HorizontalAlignment="Left" AutomationProperties.AutomationId="ExitButton"/>
+    </ScrollViewer>
+    <Border Grid.Row="3" Background="{StaticResource BackgroundBrush}" Padding="6,5,4,0" Margin="0,6,0,0">
+     <Grid>
+      <TextBlock x:Name="StatusText" Visibility="Collapsed" Text="{DynamicResource ReadyEsc}" Foreground="{StaticResource MutedBrush}" FontSize="11"
+       AutomationProperties.AutomationId="StatusText" AutomationProperties.LiveSetting="Polite"/>
+      <TextBlock x:Name="BrowserStatusText" Text="{DynamicResource ChatEsc}" Foreground="{StaticResource MutedBrush}" FontSize="11"
+       AutomationProperties.AutomationId="BrowserStatusText" AutomationProperties.LiveSetting="Polite"/>
+     </Grid>
+    </Border>
+   </Grid>
+   <Grid x:Name="CompactPanel" Visibility="Collapsed">
+    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <Image Source="Assets/agripa.ico" Width="22" Height="22" Margin="2,0,7,0" VerticalAlignment="Center"/>
+    <StackPanel Grid.Column="1" VerticalAlignment="Center" MouseLeftButtonDown="CompactPanel_MouseLeftButtonDown" Background="Transparent">
+     <TextBlock Text="Agripa" FontWeight="SemiBold" FontSize="13"/>
+     <TextBlock x:Name="CompactStatusText" Text="{DynamicResource CompactReady}" FontSize="10" Foreground="{StaticResource MutedBrush}" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
     </StackPanel>
-   </ScrollViewer>
-   <TextBlock Grid.Row="3" x:Name="StatusText" Visibility="Collapsed" Text="{DynamicResource ReadyEsc}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0"
-    AutomationProperties.AutomationId="StatusText" AutomationProperties.LiveSetting="Polite"/>
-   <TextBlock Grid.Row="3" x:Name="BrowserStatusText" Text="{DynamicResource ChatEsc}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,12,0,0"
-    AutomationProperties.AutomationId="BrowserStatusText" AutomationProperties.LiveSetting="Polite"/>
+    <Button Grid.Column="2" x:Name="RestorePanelButton" Click="Compact_Click" ToolTip="{DynamicResource RestorePanel}" AutomationProperties.Name="{DynamicResource RestorePanel}" AutomationProperties.AutomationId="RestorePanelButton" Padding="8,5"><TextBlock FontFamily="Segoe MDL2 Assets" Text="&#xE740;" FontSize="14"/></Button>
+   </Grid>
   </Grid>
  </Border>
 </Window>

@@ -15,6 +15,7 @@ public static class OverlayE2ENative {
   public static IntPtr ForegroundRoot() { return GetAncestor(GetForegroundWindow(), 2); }
   [StructLayout(LayoutKind.Sequential)] public struct Rect { public int Left,Top,Right,Bottom; }
   [DllImport("dwmapi.dll")] public static extern int DwmGetWindowAttribute(IntPtr hwnd,uint attribute,out Rect rect,int size);
+  [DllImport("user32.dll")] public static extern bool GetWindowRect(IntPtr hwnd,out Rect rect);
   [DllImport("user32.dll")] public static extern uint GetDpiForWindow(IntPtr hwnd);
   [DllImport("user32.dll")] public static extern bool SetPhysicalCursorPos(int x, int y);
   [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
@@ -52,7 +53,9 @@ function Find-Control([string]$Id) {
     return $item
 }
 function Click([string]$Id) {
-    (Find-Control $Id).GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
+    $item = Find-Control $Id
+    try { $item.GetCurrentPattern([System.Windows.Automation.ScrollItemPattern]::Pattern).ScrollIntoView() } catch { }
+    $item.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern).Invoke()
 }
 function Browser-Requests {
     if (Test-Path $browserLog) { Get-Content $browserLog | ForEach-Object { $_ | ConvertFrom-Json } }
@@ -109,6 +112,11 @@ function Wait-Browser {
 }
 function Set-Field([string]$Id, [string]$Value) {
     (Find-Control $Id).GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($Value)
+}
+function Assign-Shortcut([string]$Id, [string]$Keys) {
+    Click $Id
+    [System.Windows.Forms.SendKeys]::SendWait($Keys)
+    Start-Sleep -Milliseconds 150
 }
 function Get-Field([string]$Id) {
     return (Find-Control $Id).GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).Current.Value
@@ -189,7 +197,29 @@ try {
     (Find-Control 'OpacitySlider').GetCurrentPattern([System.Windows.Automation.RangeValuePattern]::Pattern).SetValue(60)
     Click 'SaveSettingsButton'
     Wait-Until { Test-Path (Join-Path $testDir 'settings.json') } 'fichero de opacidad guardado'
-    Assert ((Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).Opacity -eq 0.6) 'Guardar persiste la opacidad.'
+    $savedSettings = Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json
+    Assert ($savedSettings.Opacity -eq 0.6) 'Guardar persiste la opacidad.'
+    Assert ($savedSettings.ShowHideShortcut -eq 'Ctrl+Alt+Space' -and $savedSettings.CaptureShortcut -eq 'Ctrl+Alt+C' -and $savedSettings.OpacityIncreaseShortcut -eq 'Ctrl+Alt+O' -and $savedSettings.OpacityDecreaseShortcut -eq 'Ctrl+Alt+Shift+O') 'Los atajos configurables tienen valores iniciales persistibles.'
+    Click 'SettingsButton'
+    Set-Field 'ProfileNameBox' 'E2E local'
+    Click 'SaveProfileButton'
+    Wait-Until { (Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).Profiles.'E2E local' } 'guardar perfil local'
+    $profile = (Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).Profiles.'E2E local'
+    Assert ($profile.Opacity -eq 0.6 -and $profile.Width -gt 0 -and $profile.MonitorDevice) 'El perfil local guarda opacidad y geometría del monitor.'
+    Click 'ApplyProfileButton'
+    Click 'DeleteProfileButton'
+    Wait-Until { -not (Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).Profiles.'E2E local' } 'eliminar perfil local'
+    Assign-Shortcut 'ShowHideHotkeyButton' '^+ '
+    Assign-Shortcut 'CaptureHotkeyButton' '^+ '
+    Wait-Until { (Find-Control 'StatusText').Current.Name -like '*Dos acciones usan el mismo atajo*' } 'detectar conflicto de atajos'
+    Assert ((Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).CaptureShortcut -eq 'Ctrl+Alt+C') 'Un conflicto mantiene intactos los atajos guardados.'
+    Assign-Shortcut 'CaptureHotkeyButton' '^+c'
+    Click 'SaveSettingsButton'
+    Wait-Until { (Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).ShowHideShortcut -eq 'Ctrl+Shift+Space' } 'guardar nuevo atajo'
+    Click 'SettingsButton'
+    Assign-Shortcut 'ShowHideHotkeyButton' '^% '
+    Assign-Shortcut 'CaptureHotkeyButton' '^%c'
+    Click 'SaveSettingsButton'
     # A separate desktop window stands in for a windowed/borderless game.
     $gameScript = Join-Path $testDir 'game.ps1'
     @'
@@ -210,6 +240,25 @@ $form.BackColor = [System.Drawing.Color]::DarkSlateGray
     } 'ventana de juego simulado'
     $gameHandle = [IntPtr]$script:gameWindow.Current.NativeWindowHandle
     Click 'HideButton'
+    Wait-Until { -not [OverlayE2ENative]::IsWindowVisible($hwnd) } 'ocultar antes de activar el juego de prueba'
+    [OverlayE2ENative]::SetForegroundWindow($gameHandle) | Out-Null
+    Show-ByHotkey
+    Click 'SettingsButton'
+    (Find-Control 'ClickThroughToggle').GetCurrentPattern([System.Windows.Automation.TogglePattern]::Pattern).Toggle()
+    Wait-Until { ([OverlayE2ENative]::GetWindowLong($hwnd, -20) -band 32) -ne 0 } 'activar el estilo de paso de clics'
+    Wait-Until { [OverlayE2ENative]::ForegroundRoot() -eq $gameHandle } 'devolver foco de teclado al juego en paso de clics'
+    [System.Windows.Forms.SendKeys]::SendWait('^%p')
+    Wait-Until { ([OverlayE2ENative]::GetWindowLong($hwnd, -20) -band 32) -eq 0 } 'recuperar interacción con el atajo de paso de clics'
+    Assert (([OverlayE2ENative]::GetWindowLong($hwnd, -20) -band 32) -eq 0) 'El atajo desactiva paso de clics de forma segura.'
+    Click 'BackButton'
+    $compactScale = [OverlayE2ENative]::GetDpiForWindow($hwnd) / 96.0
+    $script:compactRect = [OverlayE2ENative+Rect]::new()
+    [System.Windows.Forms.SendKeys]::SendWait('^%m')
+    Wait-Until { [OverlayE2ENative]::GetWindowRect($hwnd,[ref]$script:compactRect) -and $script:compactRect.Right-$script:compactRect.Left -lt 300*$compactScale } 'entrar en modo compacto'
+    Assert (($compactRect.Right-$compactRect.Left) -lt 300*$compactScale -and ($compactRect.Bottom-$compactRect.Top) -lt 80*$compactScale) 'El modo compacto reduce el panel a una pestaña.'
+    [System.Windows.Forms.SendKeys]::SendWait('^%m')
+    Wait-Until { [OverlayE2ENative]::GetWindowRect($hwnd,[ref]$script:compactRect) -and $script:compactRect.Right-$script:compactRect.Left -ge 350*$compactScale } 'restaurar panel desde modo compacto'
+    Click 'HideButton'
     Wait-Until { -not [OverlayE2ENative]::IsWindowVisible($hwnd) } 'ocultar desde el botón'
     Assert (-not [OverlayE2ENative]::IsWindowVisible($hwnd)) 'Ocultar retira el panel del escritorio.'
     [System.Windows.Forms.SendKeys]::SendWait('%')
@@ -221,6 +270,13 @@ $form.BackColor = [System.Drawing.Color]::DarkSlateGray
     $scale = [OverlayE2ENative]::GetDpiForWindow($hwnd) / 96.0
     $transform = $root.GetCurrentPattern([System.Windows.Automation.TransformPattern]::Pattern)
     $transform.Move($gameRect.Left + 20 * $scale, $gameRect.Top + 20 * $scale)
+    Wait-Until {
+        $saved = Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json
+        $currentRect = [OverlayE2ENative+Rect]::new()
+        [OverlayE2ENative]::GetWindowRect($hwnd,[ref]$currentRect) | Out-Null
+        $saved.MonitorDevice -and $saved.WindowWidth -gt 0 -and $saved.WindowHeight -gt 0 -and
+            [Math]::Abs($saved.WindowX-$currentRect.Left) -le 2 -and [Math]::Abs($saved.WindowY-$currentRect.Top) -le 2
+    } 'persistir geometría y monitor'
     [System.Windows.Forms.Clipboard]::Clear()
     Click 'CaptureButton'
     Wait-Until { [System.Windows.Forms.Clipboard]::ContainsImage() } 'captura en el portapapeles'
@@ -318,8 +374,29 @@ $form.BackColor = [System.Drawing.Color]::DarkSlateGray
     Assert (@(Browser-Requests | Where-Object { $_.path -eq '/browser' })[-1].hasCookie) 'El reinicio conserva la sesión del navegador.'
     Click 'SettingsButton'
     Assert ((Find-Control 'OpacitySlider').GetCurrentPattern([System.Windows.Automation.RangeValuePattern]::Pattern).Current.Value -eq 60) 'El reinicio restaura la opacidad guardada.'
+    $persisted = Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json
+    $restoredRect = [OverlayE2ENative+Rect]::new()
+    [OverlayE2ENative]::GetWindowRect($hwnd,[ref]$restoredRect) | Out-Null
+    Assert ([Math]::Abs($restoredRect.Left-$persisted.WindowX) -le 2 -and [Math]::Abs($restoredRect.Top-$persisted.WindowY) -le 2) 'El reinicio restaura la posición física del panel.'
+    Click 'BackButton'
+    [System.Windows.Forms.SendKeys]::SendWait('^%o')
+    Wait-Until { (Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).Opacity -eq 0.65 } 'aumentar opacidad con atajo'
+    [System.Windows.Forms.SendKeys]::SendWait('^%+o')
+    Wait-Until { (Get-Content (Join-Path $testDir 'settings.json') -Raw | ConvertFrom-Json).Opacity -eq 0.6 } 'reducir opacidad con atajo'
+    Click 'SettingsButton'
     Click 'ExitButton'
     Wait-Until { $app.Refresh(); $app.HasExited } 'salida final'
+    Set-Content -Path (Join-Path $testDir 'settings.json') -Value '{ "Opacity": ' -NoNewline
+    $app = Start-Process -FilePath (Resolve-Path $ExePath) -PassThru
+    Wait-Until { Find-AppWindow } 'inicio con ajustes dañados'
+    $script:hwnd = [IntPtr]$root.Current.NativeWindowHandle
+    Wait-Browser
+    Wait-Until { (Find-Control 'StatusText').Current.Name -like '*recuperada desde la copia de seguridad*' } 'recuperar ajustes desde backup'
+    Assert (Test-Path (Join-Path $testDir 'settings.json.corrupt')) 'El fichero dañado se conserva para diagnóstico.'
+    Click 'SettingsButton'
+    Assert ((Find-Control 'OpacitySlider').GetCurrentPattern([System.Windows.Automation.RangeValuePattern]::Pattern).Current.Value -eq 65) 'La recuperación carga la copia válida anterior al daño.'
+    Click 'ExitButton'
+    Wait-Until { $app.Refresh(); $app.HasExited } 'salida tras recuperación'
     Write-Host 'E2E terminado sin solicitudes a un proveedor real.'
 } catch {
     if ($server) { Receive-Job $server -ErrorAction Continue }

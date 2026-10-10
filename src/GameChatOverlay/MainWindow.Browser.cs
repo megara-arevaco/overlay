@@ -50,7 +50,11 @@ public partial class MainWindow
             Directory.CreateDirectory(profilePath);
             _browserEnvironment = await CoreWebView2Environment.CreateAsync(userDataFolder: profilePath);
             if (_exiting) return;
-            var view = new WebView2CompositionControl { DefaultBackgroundColor = System.Drawing.Color.FromArgb(25, 29, 28) };
+            var view = new WebView2CompositionControl
+            {
+                DefaultBackgroundColor = System.Drawing.Color.FromArgb(0, 25, 29, 28),
+                Opacity = _settings.Opacity
+            };
             _browser = view;
             BrowserHost.Children.Add(view);
             await view.EnsureCoreWebView2Async(_browserEnvironment);
@@ -142,8 +146,8 @@ public partial class MainWindow
         var popup = new Window
         {
             Title = Text("BrowserWindowTitle"), Width = 600, Height = 700,
-            Owner = this, Topmost = true, ShowInTaskbar = false,
-            Opacity = Opacity,
+            Owner = this, Topmost = true, ShowInTaskbar = false, ShowActivated = !_clickThrough,
+            Opacity = 1.0,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
             Content = content, Tag = view, Background = Background
         };
@@ -153,6 +157,8 @@ public partial class MainWindow
         try
         {
             popup.Show();
+            if (_clickThrough) SetWindowClickThrough(new WindowInteropHelper(popup).Handle, true);
+            view.Opacity = _settings.Opacity;
             await view.EnsureCoreWebView2Async(_browserEnvironment);
             if (_exiting || !_browserPopups.Contains(popup)) return;
             ConfigureBrowser(view);
@@ -204,6 +210,13 @@ public partial class MainWindow
         _browser = null;
         _browserEnvironment = null;
         BrowserHost.Children.Clear();
+    }
+
+    private void BrowserMore_Click(object sender, RoutedEventArgs e)
+    {
+        if (BrowserMoreButton.ContextMenu is not System.Windows.Controls.ContextMenu menu) return;
+        menu.PlacementTarget = BrowserMoreButton;
+        menu.IsOpen = true;
     }
 
     private async void BrowserHome_Click(object sender, RoutedEventArgs e)

@@ -152,10 +152,18 @@ public partial class MainWindow
                 if (IsCaptureTarget(target)) _previousWindow = target;
                 Show();
                 WindowState = WindowState.Normal;
-                Activate();
-                NativeMethods.SetForegroundWindow(_handle);
+                if (_clickThrough)
+                {
+                    if (_previousWindow != IntPtr.Zero && NativeMethods.IsWindow(_previousWindow))
+                        NativeMethods.SetForegroundWindow(_previousWindow);
+                }
+                else
+                {
+                    Activate();
+                    NativeMethods.SetForegroundWindow(_handle);
+                }
                 RestoreBrowserPopups();
-                _ = Dispatcher.BeginInvoke(FocusInput, DispatcherPriority.Input);
+                if (!_compactMode) _ = Dispatcher.BeginInvoke(FocusInput, DispatcherPriority.Input);
             }
         }
         if (!_exiting) SetStatus(message, error);
