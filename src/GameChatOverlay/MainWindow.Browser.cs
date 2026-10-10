@@ -38,9 +38,9 @@ public partial class MainWindow
         _browserInitializing = true;
         BrowserReloadButton.IsEnabled = false;
         BrowserNotice.Visibility = Visibility.Visible;
-        BrowserNoticeText.Text = "Preparando el navegador…";
+        BrowserNoticeText.Text = Text("PreparingBrowser");
         InstallBrowserButton.Visibility = Visibility.Collapsed;
-        BrowserStatusText.Text = "Cargando ChatGPT web…";
+        BrowserStatusText.Text = Text("BrowserLoading");
         try
         {
             _ = CoreWebView2Environment.GetAvailableBrowserVersionString();
@@ -62,14 +62,14 @@ public partial class MainWindow
             };
             view.CoreWebView2.NavigationStarting += (_, args) =>
             {
-                if (_browser == view && !args.Cancel) BrowserStatusText.Text = "Cargando página…";
+                if (_browser == view && !args.Cancel) BrowserStatusText.Text = Text("PageLoading");
             };
             view.CoreWebView2.NavigationCompleted += (_, args) =>
             {
                 if (_exiting || _browser != view) return;
                 BrowserStatusText.Text = args.IsSuccess
-                    ? "ChatGPT web · Esc vuelve al juego"
-                    : "No se pudo cargar la página. Pulsa Recargar o Abrir fuera.";
+                    ? Text("ChatEsc")
+                    : Text("PageLoadError");
             };
             view.CoreWebView2.ProcessFailed += (_, args) =>
             {
@@ -77,7 +77,7 @@ public partial class MainWindow
                 if (args.ProcessFailedKind is CoreWebView2ProcessFailedKind.BrowserProcessExited or CoreWebView2ProcessFailedKind.RenderProcessExited)
                 {
                     _browserFailed = true;
-                    BrowserStatusText.Text = "El navegador se ha detenido. Pulsa Recargar para recuperarlo.";
+                    BrowserStatusText.Text = Text("BrowserStopped");
                 }
             };
             BrowserNotice.Visibility = Visibility.Collapsed;
@@ -86,17 +86,17 @@ public partial class MainWindow
         catch (WebView2RuntimeNotFoundException)
         {
             DisposeBrowser();
-            BrowserNoticeText.Text = "Para abrir ChatGPT web necesitas Microsoft Edge WebView2 Runtime. Instálalo y pulsa Recargar.";
+            BrowserNoticeText.Text = Text("RuntimeMissing");
             InstallBrowserButton.Visibility = Visibility.Visible;
-            BrowserStatusText.Text = "WebView2 Runtime no está instalado.";
+            BrowserStatusText.Text = Text("RuntimeNotInstalled");
         }
         catch (Exception ex) when (ex is COMException or IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or DllNotFoundException)
         {
             if (!_exiting)
             {
                 DisposeBrowser();
-                BrowserNoticeText.Text = "No se pudo iniciar el navegador. Revisa los permisos del perfil y la instalación de WebView2, y pulsa Recargar.";
-                BrowserStatusText.Text = "ChatGPT web no está disponible. Pulsa Recargar o Abrir fuera.";
+                BrowserNoticeText.Text = Text("BrowserStartError");
+                BrowserStatusText.Text = Text("BrowserUnavailable");
             }
         }
         finally
@@ -117,7 +117,7 @@ public partial class MainWindow
             if (!IsBrowserUrl(args.Uri))
             {
                 args.Cancel = true;
-                BrowserStatusText.Text = "El enlace usa un protocolo que este navegador no admite.";
+                BrowserStatusText.Text = Text("UnsupportedProtocol");
             }
         };
         view.CoreWebView2.NewWindowRequested += Browser_NewWindowRequested;
@@ -141,7 +141,7 @@ public partial class MainWindow
         content.Children.Add(view);
         var popup = new Window
         {
-            Title = "ChatGPT web · Ventana de navegación", Width = 600, Height = 700,
+            Title = Text("BrowserWindowTitle"), Width = 600, Height = 700,
             Owner = this, Topmost = true, ShowInTaskbar = false,
             Opacity = Opacity,
             WindowStartupLocation = WindowStartupLocation.CenterOwner,
@@ -163,7 +163,7 @@ public partial class MainWindow
         catch (Exception ex) when (ex is COMException or InvalidOperationException or ArgumentException)
         {
             if (_browserPopups.Contains(popup)) popup.Close();
-            if (!_exiting) BrowserStatusText.Text = "No se pudo abrir la ventana de login. Prueba Abrir fuera.";
+            if (!_exiting) BrowserStatusText.Text = Text("LoginWindowError");
         }
         finally
         {
@@ -230,7 +230,7 @@ public partial class MainWindow
         catch (Exception ex) when (ex is COMException or InvalidOperationException)
         {
             _browserFailed = true;
-            BrowserStatusText.Text = "No se pudo navegar. Pulsa Recargar para recuperar el navegador.";
+            BrowserStatusText.Text = Text("NavigationError");
         }
     }
 
@@ -243,7 +243,7 @@ public partial class MainWindow
         try { Process.Start(new ProcessStartInfo(url) { UseShellExecute = true }); }
         catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
         {
-            BrowserStatusText.Text = "No se pudo abrir el navegador externo.";
+            BrowserStatusText.Text = Text("ExternalBrowserError");
         }
     }
 }

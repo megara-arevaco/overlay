@@ -86,7 +86,8 @@ public partial class ScreenshotCropWindow : Window
             e.Handled = true;
             if (_dragging || _selection.Width < 2 || _selection.Height < 2)
             {
-                InstructionsText.Text = "Selecciona una zona antes de pulsar Enter · Esc cancela";
+                InstructionsText.Text = (TryFindResource("CropNeedSelection") as string)
+                ?? "Select an area before pressing Enter · Esc cancels";
                 return;
             }
             double scaleX = _image.PixelWidth / CaptureSurface.ActualWidth;

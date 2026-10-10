@@ -124,22 +124,22 @@ public partial class MainWindow
                 var selector = new ScreenshotCropWindow(image, bounds) { Owner = this };
                 if (selector.ShowDialog() != true || selector.SelectedImage is null)
                 {
-                    if (!_exiting) SetStatus("Recorte cancelado. El portapapeles no ha cambiado.");
+                    if (!_exiting) SetStatus(Text("CropCancelled"));
                     return;
                 }
                 image = selector.SelectedImage;
             }
             await CopyCaptureAsync(image);
             message = selectRegion
-                ? "Recorte copiado. Pulsa Ctrl+V en ChatGPT para adjuntar la imagen."
+                ? Text("CropCopied")
                 : capturingWindow
-                ? "Ventana capturada. Pulsa Ctrl+V en ChatGPT para adjuntar la imagen."
-                : "Monitor capturado. Pulsa Ctrl+V en ChatGPT para adjuntar la imagen.";
+                ? Text("WindowCopied")
+                : Text("MonitorCopied");
         }
         catch (Exception ex) when (ex is Win32Exception or ExternalException or IOException or
             InvalidOperationException or ArgumentException or NotSupportedException)
         {
-            message = "No se pudo copiar la captura. Vuelve a intentarlo con el juego visible.";
+            message = Text("CaptureError");
             error = true;
         }
         finally

@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Windows;
 
@@ -14,7 +16,23 @@ public partial class App : Application
         _instance = new Mutex(true, @"Local\GameChatOverlay.Mvp", out bool created);
         if (!created)
         {
-            MessageBox.Show("Agripa ya está abierto. Pulsa Ctrl+Alt+Espacio o usa el icono de la bandeja.", "Agripa");
+            string language;
+            try
+            {
+                language = new SettingsStore().Load().Language?.StartsWith("en", StringComparison.OrdinalIgnoreCase) == true
+                    ? "en"
+                    : "es";
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or FormatException)
+            {
+                language = "es";
+            }
+
+            var strings = new ResourceDictionary
+            {
+                Source = new Uri($"/Agripa;component/Strings/Strings.{language}.xaml", UriKind.Relative)
+            };
+            MessageBox.Show(strings["AlreadyRunning"] as string ?? "Agripa", "Agripa");
             _instance.Dispose();
             _instance = null;
             Shutdown();

@@ -7,6 +7,7 @@ namespace GameChatOverlay;
 public sealed record OverlaySettings
 {
     public double Opacity { get; init; } = 0.85;
+    public string Language { get; init; } = "es";
 
     public static double NormalizeOpacity(double value) => double.IsFinite(value) ? Math.Clamp(value, 0.30, 1.0) : 0.85;
 }

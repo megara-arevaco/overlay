@@ -22,9 +22,12 @@ public partial class MainWindow : Window
     private bool _hotkeyRegistered;
     private bool _captureHotkeyRegistered;
     private bool _exiting;
+    private bool _applyingLanguage;
+    private ResourceDictionary? _languageDictionary;
     public MainWindow()
     {
         InitializeComponent();
+        ApplyLanguage("es");
         Width = Math.Min(Width, Math.Max(MinWidth, SystemParameters.WorkArea.Width - 48));
         Left = Math.Max(SystemParameters.WorkArea.Left, SystemParameters.WorkArea.Right - Width - 24);
         Top = SystemParameters.WorkArea.Top + 24;
@@ -32,13 +35,18 @@ public partial class MainWindow : Window
         try
         {
             _settings = _store.Load();
-            _settings = _settings with { Opacity = OverlaySettings.NormalizeOpacity(_settings.Opacity) };
+            _settings = _settings with
+            {
+                Opacity = OverlaySettings.NormalizeOpacity(_settings.Opacity),
+                Language = NormalizeLanguage(_settings.Language)
+            };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or ArgumentException or FormatException)
         {
             _settings = new OverlaySettings();
-            SetStatus("No se pudo cargar la configuración. Revísala en Ajustes.", true);
+            SetStatus(Text("SettingsLoadError"), true);
         }
+        ApplyLanguage(_settings.Language);
         OpacitySlider.Value = _settings.Opacity * 100;
         ApplyOpacity(_settings.Opacity);
         Loaded += async (_, _) => { await EnsureBrowserAsync(); if (!_exiting && IsVisible && IsActive) FocusInput(); };
@@ -55,24 +63,74 @@ public partial class MainWindow : Window
             NativeMethods.HotkeyModifiers, NativeMethods.SpaceKey);
         if (!_hotkeyRegistered)
         {
-            HotkeyHint.Text = "Atajo ocupado · usa el icono de la bandeja";
-            SetStatus("No se pudo registrar Ctrl+Alt+Espacio. Puedes abrir el panel desde la bandeja.", true);
+            HotkeyHint.Text = Text("HotkeyBusy");
+            SetStatus(Text("HotkeyRegisterError"), true);
         }
         _captureHotkeyRegistered = NativeMethods.RegisterHotKey(_handle, NativeMethods.CaptureHotkeyId,
             NativeMethods.HotkeyModifiers, NativeMethods.CaptureKey);
         if (!_captureHotkeyRegistered)
-            CaptureButton.ToolTip = "Capturar juego · Ctrl+Alt+C está ocupado; usa este botón";
+            CaptureButton.ToolTip = Text("CaptureHotkeyBusy");
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add("Mostrar / ocultar", null, (_, _) => Dispatcher.Invoke(ToggleOverlay));
-        menu.Items.Add("Salir", null, (_, _) => Dispatcher.Invoke(ExitApplication));
+        menu.Items.Add(Text("TrayShowHide"), null, (_, _) => Dispatcher.Invoke(ToggleOverlay));
+        menu.Items.Add(Text("TrayExit"), null, (_, _) => Dispatcher.Invoke(ExitApplication));
         _tray = new Forms.NotifyIcon
         {
             Icon = LoadTrayIcon(),
-            Text = "Agripa · Ctrl+Alt+Espacio",
+            Text = Text("TrayTooltip"),
             ContextMenuStrip = menu,
             Visible = true
         };
         _tray.DoubleClick += (_, _) => Dispatcher.Invoke(ToggleOverlay);
+    }
+
+    private static string NormalizeLanguage(string? language) =>
+        language?.StartsWith("en", StringComparison.OrdinalIgnoreCase) == true ? "en" : "es";
+
+    private string Text(string key) => TryFindResource(key) as string ?? key;
+
+    private void ApplyLanguage(string language)
+    {
+        string normalized = NormalizeLanguage(language);
+        _applyingLanguage = true;
+        var dictionary = new ResourceDictionary
+        {
+            Source = new Uri($"/Agripa;component/Strings/Strings.{normalized}.xaml", UriKind.Relative)
+        };
+        if (_languageDictionary is not null)
+            Application.Current.Resources.MergedDictionaries.Remove(_languageDictionary);
+        Application.Current.Resources.MergedDictionaries.Add(dictionary);
+        _languageDictionary = dictionary;
+        LanguageSelector.SelectedValue = normalized;
+        _applyingLanguage = false;
+        if (_handle != IntPtr.Zero)
+        {
+            HotkeyHint.Text = Text(_hotkeyRegistered ? "HotkeyHint" : "HotkeyBusy");
+            if (!_captureHotkeyRegistered)
+                CaptureButton.ToolTip = Text("CaptureHotkeyBusy");
+        }
+        foreach (Window popup in _browserPopups)
+            popup.Title = Text("BrowserWindowTitle");
+        if (_tray is not null)
+        {
+            if (_tray.ContextMenuStrip?.Items.Count > 0)
+                _tray.ContextMenuStrip.Items[0].Text = Text("TrayShowHide");
+            if (_tray.ContextMenuStrip?.Items.Count > 1)
+                _tray.ContextMenuStrip.Items[1].Text = Text("TrayExit");
+            _tray.Text = Text("TrayTooltip");
+        }
+    }
+
+    private void LanguageSelector_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_applyingLanguage || LanguageSelector.SelectedValue is not string language) return;
+        language = NormalizeLanguage(language);
+        ApplyLanguage(language);
+        _settings = _settings with { Language = language };
+        try { _store.Save(_settings); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SetStatus(Text("SettingsSaveError"), true);
+        }
     }
 
     private static System.Drawing.Icon LoadTrayIcon()
@@ -185,16 +243,20 @@ public partial class MainWindow : Window
     {
         try
         {
-            var updated = new OverlaySettings { Opacity = OverlaySettings.NormalizeOpacity(OpacitySlider.Value / 100) };
+            var updated = new OverlaySettings
+            {
+                Opacity = OverlaySettings.NormalizeOpacity(OpacitySlider.Value / 100),
+                Language = _settings.Language
+            };
             _store.Save(updated);
             _settings = updated;
             BackToChat();
-            BrowserStatusText.Text = "Opacidad guardada · Esc vuelve al juego";
+            BrowserStatusText.Text = Text("OpacitySaved");
         }
         catch (ArgumentException ex) { SetStatus(ex.Message, true); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            SetStatus("No se pudo guardar la configuración. Revisa los permisos de tu usuario.", true);
+            SetStatus(Text("SettingsSaveError"), true);
         }
     }
 
